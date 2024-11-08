@@ -1,0 +1,78 @@
+
+/* Admin Container */
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: #de2702; 
+  width: 250px;
+}
+
+.sidebar-header {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #edf2f7; 
+}
+
+.sidebar-links li a {
+  font-size: 1.1rem;
+  display: block;
+  padding: 10px 0;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.sidebar-links li a:hover {
+  color: #e2e8f0; 
+  background-color: #ccd3e1; 
+  padding-left: 15px;
+  border-radius: 5px;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #de2702; 
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-left a {
+  font-size: 1.1rem;
+  padding: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.navbar-left a:hover {
+  color: #e2e8f0;
+}
+
+.navbar-right span {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.navbar-right button {
+  background: none;
+  border: none;
+  color: #90a68c; 
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navbar-right button:hover {
+  color: #1c1a1a; /* Tailwind Red 600 */
+}
+
+/* Content */
+.content {
+  padding: 2rem;
+  flex-grow: 1;
+  background-color: #eaebec; 
+  min-height: 100vh;
+}
