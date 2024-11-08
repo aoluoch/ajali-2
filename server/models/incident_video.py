@@ -1,9 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
 
 db = SQLAlchemy()
 
-class IncidentVideo(db.Model):
+class IncidentVideo(db.Model, SerializerMixin):
     __tablename__ = 'incident_videos'
+
+    serialize_rules = ('-incident',)
 
     id = db.Column(db.Integer, primary_key=True)
     report_id = db.Column(db.Integer, db.ForeignKey('incident_reports.id'), nullable=False)

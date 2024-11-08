@@ -3,7 +3,10 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from extensions import db
-from models import User, IncidentReport, IncidentImage, IncidentVideo
+from models.user import User #IncidentReport, IncidentImage, IncidentVideo
+from models.incident_report import IncidentReport
+from models.incident_image import IncidentImage
+from models.incident_video import IncidentVideo
 
 # Initialize Flask app and extensions
 app = Flask(__name__)

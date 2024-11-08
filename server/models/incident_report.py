@@ -1,10 +1,13 @@
 import datetime
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_serializer import SerializerMixin
 
 db = SQLAlchemy()
 
-class IncidentReport(db.Model):
+class IncidentReport(db.Model, SerializerMixin):
     __tablename__ = 'incident_reports'
+
+    serialize_rules = ('-user', '-images', '-videos',)
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
