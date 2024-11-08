@@ -1,4 +1,4 @@
-from server.models.app import app, db  # Correct import from server.app
+from server.app import app, db  # Correct import from server.app
 from server.models.user import User  # Correct import from server.models
 from server.models.incident_report import IncidentReport  # Correct import from server.models
 from server.models.incident_image import IncidentImage  # Correct import from server.models

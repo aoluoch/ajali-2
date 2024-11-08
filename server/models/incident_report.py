@@ -1,5 +1,7 @@
-from app import db  # Import db from app.py
 import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class IncidentReport(db.Model):
     __tablename__ = 'incident_reports'
@@ -11,23 +13,10 @@ class IncidentReport(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
 
-    user = db.relationship('User', back_populates='incidents')  # Relationship to User
-    images = db.relationship('IncidentImage', back_populates='incident')  # Relationship to IncidentImage
-    videos = db.relationship('IncidentVideo', back_populates='incident')  # Relationship to IncidentVideo
-
-    def __repr__(self):
-        return f'<IncidentReport {self.id}>'
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'description': self.description,
-            'status': self.status,
-            'latitude': self.latitude,
-            'longitude': self.longitude,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
-        }
+    # Relationship to User with back-populate
+    user = db.relationship('User', back_populates='reports')
+    # One-to-Many relationships with media models using back-populate
+    images = db.relationship('IncidentImage', back_populates='incident', lazy=True)
+    videos = db.relationship('IncidentVideo', back_populates='incident', lazy=True)

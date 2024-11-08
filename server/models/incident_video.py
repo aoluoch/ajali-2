@@ -1,4 +1,6 @@
-from server.models.app import db  # Import db from app.py
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class IncidentVideo(db.Model):
     __tablename__ = 'incident_videos'
@@ -7,8 +9,9 @@ class IncidentVideo(db.Model):
     report_id = db.Column(db.Integer, db.ForeignKey('incident_reports.id'), nullable=False)
     video_url = db.Column(db.String(255), nullable=False)
 
-    # Relationship to IncidentReport with back-populates
+    # Relationship to IncidentReport with back-populate
     incident = db.relationship('IncidentReport', back_populates='videos')
+
 
 # =============================================================
 # INSTRUCTIONS TO TURN THIS INTO A REST API
