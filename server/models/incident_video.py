@@ -1,4 +1,4 @@
-from app import db  # Import db from app.py
+from server.models.app import db  # Import db from app.py
 
 class IncidentVideo(db.Model):
     __tablename__ = 'incident_videos'

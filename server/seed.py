@@ -1,8 +1,8 @@
-from app import app, db  # Ensure app and db are correctly imported from app.py
-from models.user import User  # Make sure the models directory has an __init__.py file and that user.py exists and contains the User class
-from models.incident_report import IncidentReport  # Similarly, ensure incident_report.py exists and contains the IncidentReport class
-from models.incident_image import IncidentImage  # Check that incident_image.py exists and defines the IncidentImage class
-from models.incident_video import IncidentVideo  # Make sure incident_video.py exists and contains the IncidentVideo class
+from server.models.app import app, db  # Correct import from server.app
+from server.models.user import User  # Correct import from server.models
+from server.models.incident_report import IncidentReport  # Correct import from server.models
+from server.models.incident_image import IncidentImage  # Correct import from server.models
+from server.models.incident_video import IncidentVideo  # Correct import from server.models
 
 def seed_data():
     # This block ensures you are within the Flask application context.
@@ -77,29 +77,3 @@ def seed_data():
 if __name__ == '__main__':
     # Run the seeding function
     seed_data()
-
-# COMMENTS TO FIX ERRORS:
-
-# 1. Ensure your project has the following structure:
-# ├── app.py              # Contains the app and db initialization
-# ├── models              # Folder containing model files
-# │   ├── __init__.py      # Makes 'models' a package (ensure this exists)
-# │   ├── user.py          # Contains the User model
-# │   ├── incident_report.py  # Contains the IncidentReport model
-# │   ├── incident_image.py   # Contains the IncidentImage model
-# │   ├── incident_video.py   # Contains the IncidentVideo model
-# ├── seed.py             # The current file
-
-# 2. If you encounter "ModuleNotFoundError", ensure that:
-#    a. `models/__init__.py` exists.
-#    b. Each model (User, IncidentReport, IncidentImage, IncidentVideo) is defined in its respective file.
-#    c. The import paths are correct, and `models` folder is at the appropriate level.
-
-# 3. Flask Application Context:
-#    You must use `with app.app_context()` to ensure that the database connection (db.session) is correctly initialized when you run this script.
-
-# 4. Database Session:
-#    Always use `db.session.add()` to stage changes and `db.session.commit()` to write changes to the database.
-
-# 5. Input Validation:
-#    Ensure proper input validation is in place. For example, verify latitude and longitude are valid floats and incident status is one of the allowed values.
