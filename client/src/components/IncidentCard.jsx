@@ -1,7 +1,9 @@
 import React from 'react';
 
 // Component to display individual incident details
-// Instructions to backend team: Ensure each incident object returned by the API has "title", "description", "status", and an array "mediaUrls" for any images/videos related to the incident.
+/* Instructions to backend team: 
+Ensure each incident object returned by the API has "title", "description", "status", 
+and an array "mediaUrls" for any images/videos related to the incident.*/
 
 const IncidentCard = ({ incident }) => {
   return (
