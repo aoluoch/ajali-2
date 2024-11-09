@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from models.extensions import db
-from models.user import User #IncidentReport, IncidentImage, IncidentVideo
+from models.user import User
 from models.incident_report import IncidentReport
 from models.incident_image import IncidentImage
 from models.incident_video import IncidentVideo
@@ -84,6 +84,11 @@ class IncidentListResource(Resource):
         db.session.commit()
         return jsonify(new_incident.to_dict()), 201
 
+    def delete(self):
+        IncidentReport.query.delete()
+        db.session.commit()
+        return jsonify({'message': 'All incident reports deleted'}), 204
+
 
 class IncidentResource(Resource):
     def get(self, id):
@@ -122,6 +127,14 @@ class IncidentImageResource(Resource):
         return jsonify([image.to_dict() for image in incident.images])
 
 
+class IncidentImageSingleResource(Resource):
+    def delete(self, incident_id, image_id):
+        image = IncidentImage.query.filter_by(report_id=incident_id, id=image_id).first_or_404()
+        db.session.delete(image)
+        db.session.commit()
+        return jsonify({'message': 'Incident image deleted'}), 204
+
+
 class IncidentVideoResource(Resource):
     def post(self, incident_id):
         data = request.get_json()
@@ -135,12 +148,22 @@ class IncidentVideoResource(Resource):
         return jsonify([video.to_dict() for video in incident.videos])
 
 
+class IncidentVideoSingleResource(Resource):
+    def delete(self, incident_id, video_id):
+        video = IncidentVideo.query.filter_by(report_id=incident_id, id=video_id).first_or_404()
+        db.session.delete(video)
+        db.session.commit()
+        return jsonify({'message': 'Incident video deleted'}), 204
+
+
 # ------------------------- API Routes Setup -------------------------
 api.add_resource(UserResource, '/api/users', '/api/users/<int:id>')
 api.add_resource(IncidentListResource, '/api/incidents')
 api.add_resource(IncidentResource, '/api/incidents/<int:id>')
 api.add_resource(IncidentImageResource, '/api/incidents/<int:incident_id>/images')
+api.add_resource(IncidentImageSingleResource, '/api/incidents/<int:incident_id>/images/<int:image_id>')
 api.add_resource(IncidentVideoResource, '/api/incidents/<int:incident_id>/videos')
+api.add_resource(IncidentVideoSingleResource, '/api/incidents/<int:incident_id>/videos/<int:video_id>')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000)
