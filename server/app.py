@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
-from extensions import db
+from models.extensions import db
 from models.user import User #IncidentReport, IncidentImage, IncidentVideo
 from models.incident_report import IncidentReport
 from models.incident_image import IncidentImage
@@ -20,10 +20,6 @@ db.init_app(app)
 # Migrate and API setup
 migrate = Migrate(app, db)
 api = Api(app)
-
-# Create the database if not already created
-with app.app_context():
-    db.create_all()  # Creates tables in the database
 
 
 # ------------------------- User Resource -------------------------

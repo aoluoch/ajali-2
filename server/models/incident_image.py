@@ -1,7 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
+from models.extensions import db
 
-db = SQLAlchemy()
 
 class IncidentImage(db.Model, SerializerMixin):
     __tablename__ = 'incident_images'
