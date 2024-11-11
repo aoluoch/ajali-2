@@ -26,7 +26,7 @@ class UserRegisterResource(Resource):
     def post(self):
         data = request.get_json()
         if User.query.filter_by(username=data['username']).first() or User.query.filter_by(email=data['email']).first():
-            return jsonify({'message': 'Username or Email already exists'}), 400
+            return make_response({'message': 'Username or Email already exists'}, 400)
         
         is_admin = data.get('is_admin', 'false').lower() == 'true'
 
@@ -38,7 +38,7 @@ class UserRegisterResource(Resource):
         )
         db.session.add(new_user)
         db.session.commit()
-        return make_response("User posted", 201)
+        return make_response({"message": "User posted"}, 201)
 
 class UserLoginResource(Resource):
     def post(self):
