@@ -22,8 +22,9 @@ migrate = Migrate(app, db)
 api = Api(app)
 
 # ------------------------- User Resources -------------------------
-class UserRegisterResource(Resource):
+class UserResource(Resource):
     def post(self):
+        """Register a new user"""
         data = request.get_json()
         if User.query.filter_by(username=data['username']).first() or User.query.filter_by(email=data['email']).first():
             return jsonify({'message': 'Username or Email already exists'}), 400
@@ -38,8 +39,17 @@ class UserRegisterResource(Resource):
         db.session.commit()
         return jsonify(new_user.to_dict()), 201
 
-class UserLoginResource(Resource):
+    def get(self):
+        """Get current user profile"""
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'message': 'Not logged in'}), 401
+        user = User.query.get_or_404(user_id)
+        return jsonify(user.to_dict())
+
+class AuthResource(Resource):
     def post(self):
+        """Login user"""
         data = request.get_json()
         user = User.query.filter_by(username=data['username']).first()
 
@@ -49,8 +59,8 @@ class UserLoginResource(Resource):
             return jsonify({'message': 'Login successful', 'user': user.to_dict()}), 200
         return jsonify({'message': 'Invalid username or password'}), 401
 
-class UserLogoutResource(Resource):
-    def post(self):
+    def delete(self):
+        """Logout user"""
         session.pop('user_id', None)
         session.pop('is_admin', None)
         return jsonify({'message': 'Logged out successfully'}), 200
@@ -58,10 +68,15 @@ class UserLogoutResource(Resource):
 # ------------------------- Incident Resources -------------------------
 class IncidentListResource(Resource):
     def get(self):
+        """Get all incidents"""
         incidents = IncidentReport.query.all()
         return jsonify([incident.to_dict() for incident in incidents])
 
     def post(self):
+        """Create new incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         data = request.get_json()
         new_incident = IncidentReport(
             description=data['description'],
@@ -75,6 +90,7 @@ class IncidentListResource(Resource):
         return jsonify(new_incident.to_dict()), 201
 
     def delete(self):
+        """Delete all incidents (admin only)"""
         if not session.get('is_admin'):
             return jsonify({'message': 'Admin access required'}), 403
         IncidentReport.query.delete()
@@ -83,10 +99,15 @@ class IncidentListResource(Resource):
 
 class IncidentResource(Resource):
     def get(self, id):
+        """Get specific incident"""
         incident = IncidentReport.query.get_or_404(id)
         return jsonify(incident.to_dict())
 
     def put(self, id):
+        """Update specific incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         incident = IncidentReport.query.get_or_404(id)
         if incident.user_id != session.get('user_id'):
             return jsonify({'message': 'Permission denied'}), 403
@@ -101,6 +122,10 @@ class IncidentResource(Resource):
         return jsonify(incident.to_dict())
 
     def delete(self, id):
+        """Delete specific incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         incident = IncidentReport.query.get_or_404(id)
         if incident.user_id != session.get('user_id') and not session.get('is_admin'):
             return jsonify({'message': 'Permission denied'}), 403
@@ -108,21 +133,30 @@ class IncidentResource(Resource):
         db.session.commit()
         return jsonify({'message': 'Incident report deleted'}), 204
 
-# ------------------------- Incident Image & Video Resources -------------------------
+# ------------------------- Incident Media Resources -------------------------
 class IncidentImageResource(Resource):
+    def get(self, incident_id):
+        """Get all images for an incident"""
+        incident = IncidentReport.query.get_or_404(incident_id)
+        return jsonify([image.to_dict() for image in incident.images])
+
     def post(self, incident_id):
+        """Add new image to incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         data = request.get_json()
         new_image = IncidentImage(report_id=incident_id, image_url=data['image_url'])
         db.session.add(new_image)
         db.session.commit()
         return jsonify(new_image.to_dict()), 201
 
-    def get(self, incident_id):
-        incident = IncidentReport.query.get_or_404(incident_id)
-        return jsonify([image.to_dict() for image in incident.images])
-
-class IncidentImageSingleResource(Resource):
+class IncidentImageDetailResource(Resource):
     def delete(self, incident_id, image_id):
+        """Delete specific image from incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         image = IncidentImage.query.filter_by(report_id=incident_id, id=image_id).first_or_404()
         if image.report.user_id != session.get('user_id') and not session.get('is_admin'):
             return jsonify({'message': 'Permission denied'}), 403
@@ -131,19 +165,28 @@ class IncidentImageSingleResource(Resource):
         return jsonify({'message': 'Incident image deleted'}), 204
 
 class IncidentVideoResource(Resource):
+    def get(self, incident_id):
+        """Get all videos for an incident"""
+        incident = IncidentReport.query.get_or_404(incident_id)
+        return jsonify([video.to_dict() for video in incident.videos])
+
     def post(self, incident_id):
+        """Add new video to incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         data = request.get_json()
         new_video = IncidentVideo(report_id=incident_id, video_url=data['video_url'])
         db.session.add(new_video)
         db.session.commit()
         return jsonify(new_video.to_dict()), 201
 
-    def get(self, incident_id):
-        incident = IncidentReport.query.get_or_404(incident_id)
-        return jsonify([video.to_dict() for video in incident.videos])
-
-class IncidentVideoSingleResource(Resource):
+class IncidentVideoDetailResource(Resource):
     def delete(self, incident_id, video_id):
+        """Delete specific video from incident"""
+        if not session.get('user_id'):
+            return jsonify({'message': 'Login required'}), 401
+            
         video = IncidentVideo.query.filter_by(report_id=incident_id, id=video_id).first_or_404()
         if video.report.user_id != session.get('user_id') and not session.get('is_admin'):
             return jsonify({'message': 'Permission denied'}), 403
@@ -152,15 +195,28 @@ class IncidentVideoSingleResource(Resource):
         return jsonify({'message': 'Incident video deleted'}), 204
 
 # ------------------------- API Routes Setup -------------------------
-api.add_resource(UserRegisterResource, '/users')
-api.add_resource(UserLoginResource, '/login')
-api.add_resource(UserLogoutResource, '/logout')
-api.add_resource(IncidentListResource, '/incidents')
-api.add_resource(IncidentResource, '/incidents/<int:id>')
-api.add_resource(IncidentImageResource, '/incidents/<int:incident_id>/images')
-api.add_resource(IncidentImageSingleResource, '/incidents/<int:incident_id>/images/<int:image_id>')
-api.add_resource(IncidentVideoResource, '/incidents/<int:incident_id>/videos')
-api.add_resource(IncidentVideoSingleResource, '/incidents/<int:incident_id>/videos/<int:video_id>')
+# User routes
+api.add_resource(UserResource, '/api/users')
+api.add_resource(AuthResource, '/api/auth')
+
+# Incident routes
+api.add_resource(IncidentListResource, '/api/incidents')
+api.add_resource(IncidentResource, '/api/incidents/<int:id>')
+
+# Incident media routes
+api.add_resource(IncidentImageResource, '/api/incidents/<int:incident_id>/images')
+api.add_resource(IncidentImageDetailResource, '/api/incidents/<int:incident_id>/images/<int:image_id>')
+api.add_resource(IncidentVideoResource, '/api/incidents/<int:incident_id>/videos')
+api.add_resource(IncidentVideoDetailResource, '/api/incidents/<int:incident_id>/videos/<int:video_id>')
+
+# Error Handling
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'message': 'Not found'}), 404
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    return jsonify({'message': 'Internal server error'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
