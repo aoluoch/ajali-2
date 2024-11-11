@@ -86,7 +86,7 @@ class IncidentListResource(Resource):
         # Retrieve user_id from session (ensure user is logged in)
         user_id = session.get('user_id')
         if not user_id:
-            return jsonify({"message": "User not logged in. Please login to report an incident."}), 401
+            return make_response({"message": "User not logged in. Please login to report an incident."}, 401)
 
         # Create a new incident report
         new_incident = IncidentReport(
@@ -102,14 +102,16 @@ class IncidentListResource(Resource):
         db.session.commit()
 
         # Return the newly created incident in response
-        return jsonify(new_incident.to_dict()), 201
+        return make_response({"message": "Incident posted"}, 201)
     
     def delete(self):
         if not session.get('is_admin'):
-            return jsonify({'message': 'Admin access required'}), 403
+            return make_response({"message": "Admin access required"}, 403)
         IncidentReport.query.delete()
+        IncidentImage.query.delete()
+        IncidentVideo.query.delete()
         db.session.commit()
-        return jsonify({'message': 'All incident reports deleted'}), 204
+        return make_response({"message": "All incident reports deleted"}, 204)
 
 class IncidentResource(Resource):
     def get(self, id):
@@ -131,13 +133,27 @@ class IncidentResource(Resource):
         return jsonify(incident.to_dict())
 
     def delete(self, id):
-        incident = IncidentReport.query.get_or_404(id)
-        if incident.user_id != session.get('user_id') and not session.get('is_admin'):
-            return jsonify({'message': 'Permission denied'}), 403
-        db.session.delete(incident)
-        db.session.commit()
-        return jsonify({'message': 'Incident report deleted'}), 204
+       incident = IncidentReport.query.get_or_404(id)
+    
+       if incident.user_id != session.get('user_id') and not session.get('is_admin'):
+        return make_response({"message": "Permission denied"}, 403)
 
+       incident_images = IncidentImage.query.filter_by(report_id=incident.id).all()
+       for image in incident_images:
+        db.session.delete(image)
+
+       incident_videos = IncidentVideo.query.filter_by(report_id=incident.id).all()
+       for video in incident_videos:
+        db.session.delete(video)
+
+       db.session.delete(incident)
+
+       try:
+         db.session.commit()
+         return make_response({"message": "Incident report and associated media deleted"}, 204)
+       except Exception as e:
+         db.session.rollback()
+         return make_response({"message": f"An error occurred: {str(e)}"}, 500)
 # ------------------------- Incident Image & Video Resources -------------------------
 class IncidentImageResource(Resource):
     def post(self, incident_id):
@@ -145,7 +161,7 @@ class IncidentImageResource(Resource):
         new_image = IncidentImage(report_id=incident_id, image_url=data['image_url'])
         db.session.add(new_image)
         db.session.commit()
-        return jsonify(new_image.to_dict()), 201
+        return make_response({"message": "Image posted"}, 201)
 
     def get(self, incident_id):
         incident = IncidentReport.query.get_or_404(incident_id)
@@ -154,11 +170,19 @@ class IncidentImageResource(Resource):
 class IncidentImageSingleResource(Resource):
     def delete(self, incident_id, image_id):
         image = IncidentImage.query.filter_by(report_id=incident_id, id=image_id).first_or_404()
-        if image.report.user_id != session.get('user_id') and not session.get('is_admin'):
-            return jsonify({'message': 'Permission denied'}), 403
+
+        report = IncidentReport.query.get(image.report_id) 
+        
+        if report is None:
+            return make_response({"message": "Report not found"}, 404)
+
+        if report.user_id != session.get('user_id') and not session.get('is_admin'):
+            return make_response({"message": "Permission denied"}, 403)
+
         db.session.delete(image)
         db.session.commit()
-        return jsonify({'message': 'Incident image deleted'}), 204
+        
+        return make_response({"message": "Incident image deleted"}, 204)
 
 class IncidentVideoResource(Resource):
     def post(self, incident_id):
@@ -166,7 +190,7 @@ class IncidentVideoResource(Resource):
         new_video = IncidentVideo(report_id=incident_id, video_url=data['video_url'])
         db.session.add(new_video)
         db.session.commit()
-        return jsonify(new_video.to_dict()), 201
+        return make_response({"message": "Incident video posted"}, 201)
 
     def get(self, incident_id):
         incident = IncidentReport.query.get_or_404(incident_id)
@@ -175,11 +199,17 @@ class IncidentVideoResource(Resource):
 class IncidentVideoSingleResource(Resource):
     def delete(self, incident_id, video_id):
         video = IncidentVideo.query.filter_by(report_id=incident_id, id=video_id).first_or_404()
-        if video.report.user_id != session.get('user_id') and not session.get('is_admin'):
-            return jsonify({'message': 'Permission denied'}), 403
+
+        report = IncidentReport.query.get(video.report_id)
+
+        if report is None:
+            return make_response({"message": "Report not found"}, 404)
+
+        if report.user_id != session.get('user_id') and not session.get('is_admin'):
+            return make_response({"message": "permission denied"}, 403)
         db.session.delete(video)
         db.session.commit()
-        return jsonify({'message': 'Incident video deleted'}), 204
+        return make_response({"message": "Incident video deleted"}, 204)
 
 # ------------------------- API Routes Setup -------------------------
 api.add_resource(UserRegisterResource, '/users')
