@@ -1,79 +1,82 @@
-from server.models.app import app, db  # Correct import from server.app
-from server.models.user import User  # Correct import from server.models
-from server.models.incident_report import IncidentReport  # Correct import from server.models
-from server.models.incident_image import IncidentImage  # Correct import from server.models
-from server.models.incident_video import IncidentVideo  # Correct import from server.models
+from app import app, db
+from models.user import User
+from models.incident_report import IncidentReport
+from models.incident_image import IncidentImage
+from models.incident_video import IncidentVideo
+
+predefined_users = [
+    {"username": "user1", "email": "user1@example.com", "password_hash": "hash1", "is_admin": False},
+    {"username": "user2", "email": "user2@example.com", "password_hash": "hash2", "is_admin": True},
+    {"username": "user3", "email": "user3@example.com", "password_hash": "hash3", "is_admin": False},
+    {"username": "user4", "email": "user4@example.com", "password_hash": "hash4", "is_admin": False},
+    {"username": "user5", "email": "user5@example.com", "password_hash": "hash5", "is_admin": True},
+    {"username": "user6", "email": "user6@example.com", "password_hash": "hash6", "is_admin": False},
+    {"username": "user7", "email": "user7@example.com", "password_hash": "hash7", "is_admin": False},
+    {"username": "user8", "email": "user8@example.com", "password_hash": "hash8", "is_admin": True},
+    {"username": "user9", "email": "user9@example.com", "password_hash": "hash9", "is_admin": False},
+    {"username": "user10", "email": "user10@example.com", "password_hash": "hash10", "is_admin": False}
+]
+
+predefined_incidents = [
+    {"description": "Incident 1", "status": "under investigation", "latitude": -1.286389, "longitude": 36.817223},
+    {"description": "Incident 2", "status": "resolved", "latitude": -1.2833, "longitude": 36.8167},
+    {"description": "Incident 3", "status": "under investigation", "latitude": -1.2901, "longitude": 36.8219},
+    {"description": "Incident 4", "status": "rejected", "latitude": -1.2876, "longitude": 36.8148},
+    {"description": "Incident 5", "status": "resolved", "latitude": -1.2890, "longitude": 36.8103},
+    {"description": "Incident 6", "status": "under investigation", "latitude": -1.2850, "longitude": 36.8197},
+    {"description": "Incident 7", "status": "rejected", "latitude": -1.2849, "longitude": 36.8139},
+    {"description": "Incident 8", "status": "resolved", "latitude": -1.2828, "longitude": 36.8106},
+    {"description": "Incident 9", "status": "under investigation", "latitude": -1.2835, "longitude": 36.8200},
+    {"description": "Incident 10", "status": "rejected", "latitude": -1.2870, "longitude": 36.8165}
+]
 
 def seed_data():
-    # This block ensures you are within the Flask application context.
-    # Without this, you won't be able to access the database (db.session will fail).
     with app.app_context():
+        for user_data in predefined_users:
+            existing_user = User.query.filter_by(email=user_data["email"]).first()
+            if existing_user:
+                print(f"User {user_data['username']} already exists, skipping...")
+                continue
+            user = User(
+                username=user_data["username"],
+                email=user_data["email"],
+                password_hash=user_data["password_hash"],
+                is_admin=user_data["is_admin"]
+            )
+            db.session.add(user)
+            db.session.commit()
+            print(f"User '{user.username}' created successfully!")
 
-        # Get user input for creating a new user
-        print("Enter user details to seed into the database:")
+        users = User.query.all()
+        for i, incident_data in enumerate(predefined_incidents):
+            user = users[i % len(users)]
+            existing_incident = IncidentReport.query.filter_by(description=incident_data["description"]).first()
+            if existing_incident:
+                print(f"Incident '{incident_data['description']}' already exists, skipping...")
+                continue
+            incident = IncidentReport(
+                description=incident_data["description"],
+                status=incident_data["status"],
+                latitude=incident_data["latitude"],
+                longitude=incident_data["longitude"],
+                user_id=user.id
+            )
+            db.session.add(incident)
+            db.session.commit()
+            print(f"Incident '{incident.description}' created for user '{user.username}'!")
 
-        # Input user details
-        username = input("Username: ")
-        email = input("Email: ")
-        password_hash = input("Password Hash (just a placeholder for now): ")  # Placeholder for the password (hashing is recommended for production)
-        is_admin_input = input("Is this user an admin? (yes/no): ").strip().lower()
+            image_url = f"http://example.com/image_{i+1}.jpg"
+            video_url = f"http://example.com/video_{i+1}.mp4"
 
-        # Set is_admin flag based on user input
-        is_admin = True if is_admin_input == 'yes' else False
-
-        # Create a new User object using the provided inputs
-        user = User(username=username, email=email, password_hash=password_hash, is_admin=is_admin)
-
-        # Add the new user to the session and commit (write) it to the database
-        db.session.add(user)
-        db.session.commit()
-
-        print(f"User '{username}' created successfully!")
-
-        # Input incident details
-        description = input("Enter incident description: ")
-        latitude = float(input("Enter latitude: "))
-        longitude = float(input("Enter longitude: "))
-        status = input("Enter incident status ('under investigation', 'resolved', 'rejected'): ").strip().lower()
-
-        # Validate status input
-        if status not in ['under investigation', 'resolved', 'rejected']:
-            status = 'under investigation'  # Default to 'under investigation' if the input is invalid
-
-        # Create a new IncidentReport object
-        incident = IncidentReport(
-            description=description,
-            status=status,
-            latitude=latitude,
-            longitude=longitude,
-            user_id=user.id  # Use the ID of the newly created user
-        )
-
-        # Add the new incident to the session and commit it to the database
-        db.session.add(incident)
-        db.session.commit()
-
-        print(f"Incident Report created for user {user.username}!")
-
-        # Optionally add an image to the incident
-        image_url = input("Enter image URL for the incident (optional): ")
-        if image_url:
             image = IncidentImage(report_id=incident.id, image_url=image_url)
-            db.session.add(image)  # Add the image to the session
-            db.session.commit()  # Commit the image to the database
-            print(f"Image added to incident: {image_url}")
-
-        # Optionally add a video to the incident
-        video_url = input("Enter video URL for the incident (optional): ")
-        if video_url:
             video = IncidentVideo(report_id=incident.id, video_url=video_url)
-            db.session.add(video)  # Add the video to the session
-            db.session.commit()  # Commit the video to the database
-            print(f"Video added to incident: {video_url}")
 
-        print("Seed data added successfully!")
+            db.session.add(image)
+            db.session.add(video)
+            db.session.commit()
+            print(f"Image and video added to incident '{incident.description}'.")
 
-# This ensures the script is only run when called directly, not when imported
+        print("Seeding completed successfully!")
+
 if __name__ == '__main__':
-    # Run the seeding function
     seed_data()

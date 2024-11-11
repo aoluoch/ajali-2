@@ -1,135 +1,79 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_restful import Api, Resource
-from sqlalchemy.exc import IntegrityError
-from werkzeug.security import generate_password_hash, check_password_hash  # For password hashing and verification
-from flask_cors import CORS
+from sqlalchemy_serializer import SerializerMixin
+from models.extensions import db
 
-# Initialize the Flask app and extensions
-app = Flask(__name__)
-CORS(app)
 
-# Configuration for the database URI (SQLite example)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/yourdatabase.db'  # Adjust path to your actual database
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking to save memory
-
-# Initialize SQLAlchemy and Migrate
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-# Initialize Flask-RESTful API
-api = Api(app)
-
-# ------------------------------- User Model -------------------------------
-class User(db.Model):
+class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
+    serialize_rules = ('-reports',)
+
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
-    def __repr__(self):
-        return f'<User {self.username}>'
-
-    def to_dict(self):
-        """Method to convert User object to a dictionary."""
-        return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'is_admin': self.is_admin
-        }
-
-    def set_password(self, password):
-        """Hashes and sets the user's password."""
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        """Checks if the provided password matches the stored hash."""
-        return check_password_hash(self.password_hash, password)
+    # One-to-many relationship with IncidentReport using back-populate
+    reports = db.relationship('IncidentReport', back_populates='user', lazy=True)
 
 
-# ------------------------------- User Resource for CRUD operations -------------------------------
+# =============================================================
+# INSTRUCTIONS TO TURN THIS INTO A REST API
+# =============================================================
 
-class UserResource(Resource):
-    def get(self, id=None):
-        """
-        Get a user by ID, or all users if no ID is provided.
-        """
-        if id:
-            user = User.query.get_or_404(id)  # Get user by ID, or 404 if not found
-            return jsonify(user.to_dict())  # Return the user as JSON
-        else:
-            users = User.query.all()  # Get all users
-            return jsonify([user.to_dict() for user in users])  # Return list of users as JSON
+# Step 1: Create a Flask REST API application
+# -------------------------------------------
+# You need to create a Flask app instance to set up your REST API.
+# Example:
+# from flask import Flask
+# from flask_restful import Api
+#
+# app = Flask(__name__)
+# api = Api(app)
+#
+# Step 2: Create a User Resource for RESTful Endpoints
+# ----------------------------------------------------
+# Use Flask-RESTful or Flask-Restx to create a resource that maps to this User model.
+# Each resource should represent a CRUD action (GET, POST, PUT, DELETE).
+#
+# Example with Flask-RESTful:
+# from flask_restful import Resource, reqparse
+#
+# class UserResource(Resource):
+#     def get(self, user_id):
+#         user = User.query.get_or_404(user_id)
+#         return user.to_dict(), 200  # The SerializerMixin allows you to serialize the User object
+#
+#     def post(self):
+#         # Use reqparse to parse incoming data (e.g., JSON payload)
+#         parser = reqparse.RequestParser()
+#         parser.add_argument('username', required=True)
+#         parser.add_argument('email', required=True)
+#         parser.add_argument('password', required=True)
+#         args = parser.parse_args()
+#
+#         # Create a new user
+#         new_user = User(username=args['username'], email=args['email'], password_hash=args['password'])
+#         db.session.add(new_user)
+#         db.session.commit()
+#         return new_user.to_dict(), 201
+#
+# Step 3: Add Routes to the API
+# -----------------------------
+# Once you have the resource, map the endpoints to it using the api object.
+# Example:
+# api.add_resource(UserResource, '/users/<int:user_id>', '/users')
+#
+# Step 4: Create a SerializerMixin for Consistent JSON Responses
+# --------------------------------------------------------------
+# Since you're using SerializerMixin, this automatically provides methods like `to_dict()`
+# which you can use to serialize your User model to JSON format.
 
-    def post(self):
-        """
-        Create a new user
-        """
-        data = request.get_json()  # Get data from the request
-        try:
-            # Ensure uniqueness of username/email by checking the database first
-            if User.query.filter_by(username=data['username']).first():
-                return jsonify({'message': 'Username already exists'}), 400
-            if User.query.filter_by(email=data['email']).first():
-                return jsonify({'message': 'Email already exists'}), 400
-
-            # Create a new User object
-            new_user = User(
-                username=data['username'],
-                email=data['email'],
-                is_admin=data.get('is_admin', False)  # Default to False if not provided
-            )
-
-            # Hash and set the password
-            new_user.set_password(data['password'])  # Ensure password is hashed
-
-            db.session.add(new_user)  # Add user to the session
-            db.session.commit()  # Commit to save in the database
-            return jsonify(new_user.to_dict()), 201  # Return the newly created user
-
-        except IntegrityError as e:
-            db.session.rollback()  # Rollback if there’s an integrity error (e.g., duplicate username/email)
-            return jsonify({'message': 'Error creating user. Check the data.'}), 400
-
-    def put(self, id):
-        """
-        Update an existing user by ID
-        """
-        user = User.query.get_or_404(id)  # Get user by ID, or 404 if not found
-        data = request.get_json()  # Get data from the request
-
-        # Update the fields (only update the fields provided)
-        user.username = data.get('username', user.username)
-        user.email = data.get('email', user.email)
-        user.is_admin = data.get('is_admin', user.is_admin)
-
-        # If password is provided, hash and update it
-        if 'password' in data:
-            user.set_password(data['password'])
-
-        db.session.commit()  # Commit changes to the database
-        return jsonify(user.to_dict())  # Return the updated user
-
-    def delete(self, id):
-        """
-        Delete a user by ID
-        """
-        user = User.query.get_or_404(id)  # Get user by ID, or 404 if not found
-        db.session.delete(user)  # Delete the user
-        db.session.commit()  # Commit the deletion
-        return jsonify({'message': 'User deleted'}), 204  # Return a success message
-
-
-# ------------------------------- Add User Resource to API -------------------------------
-
-api.add_resource(UserResource, '/api/users', '/api/users/<int:id>')  # Define routes for UserResource
-
-# ------------------------------- Run the Application -------------------------------
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)  # Change to a different port if needed
+# Step 5: Add Error Handling
+# --------------------------
+# Ensure you handle cases such as 404 (Not Found), validation errors, and other exceptions
+# when creating or retrieving users.
+#
+# Example:
+# if User.query.filter_by(username=args['username']).first():
+#     return {"message": "User already exists"}, 400
