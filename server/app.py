@@ -14,9 +14,8 @@ app = Flask(__name__)
 # Enable CORS
 CORS(app)
 
-# Configure the database URI
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/yourdatabase'  # Replace with your actual database URI
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To avoid overhead
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ajali.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize the SQLAlchemy instance
 db.init_app(app)
