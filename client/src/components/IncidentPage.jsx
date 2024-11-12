@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import IncidentCard from './IncidentCard';
 import Filters from './Filters';
-import IncidentMap from './IncidentMap';
+import IncidentMap from './MapSection';
 
 // Main component for managing and displaying incidents
 /* Instructions to backend team:

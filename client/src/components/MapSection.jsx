@@ -5,7 +5,7 @@ import React from 'react';
 Provide incident location data as "latitude" and "longitude" properties within each incident object. 
 Ensure this data is accurate and accessible in the /api/incidents endpoint.*/
 
-const IncidentMap = ({ incidents }) => {
+const MapSection = ({ incidents }) => {
   return (
     <div className="map-container w-full h-64 bg-gray-200">
       <p>Map displaying incident locations will appear here.</p>
@@ -15,4 +15,4 @@ const IncidentMap = ({ incidents }) => {
   );
 };
 
-export default IncidentMap;
+export default MapSection;
