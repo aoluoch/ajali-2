@@ -1,6 +1,6 @@
 import React from 'react';
 import IncidentCard from './IncidentCard';
-import MapSection from './IncidentMap';
+import MapSection from './Map';
 // import RecentIncidents from './RecentIncidents';
 
 const Dashboard = ({ incidents }) => {
