@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet-control-geocoder": "^2.4.0",
+    "leaflet-geosearch": "^4.0.0",
     "react-router-dom": "^6.28.0"
   }
 }
