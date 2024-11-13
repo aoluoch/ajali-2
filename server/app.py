@@ -14,9 +14,9 @@ from models.resources_userprofile import UserProfile  # Import the UserProfile m
 # Initialize Flask app and extensions
 app = Flask(__name__)
 CORS(app)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ajali.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'your_secret_key'
 
 # Initialize db, migrations, and API
 db.init_app(app)
