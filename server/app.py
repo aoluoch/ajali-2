@@ -8,6 +8,8 @@ from models.incident_report import IncidentReport
 from models.incident_image import IncidentImage
 from models.incident_video import IncidentVideo
 from werkzeug.security import generate_password_hash, check_password_hash
+from models.resources_userprofile import UserProfile  # Import the UserProfile model
+
 
 # Initialize Flask app and extensions
 app = Flask(__name__)
@@ -20,6 +22,36 @@ app.secret_key = 'your_secret_key'
 db.init_app(app)
 migrate = Migrate(app, db)
 api = Api(app)
+
+
+
+# ------------------------- User Profile Resource -------------------------
+class UserProfileResource(Resource):
+    def get(self, username):
+        user = UserProfile.query.filter_by(username=username).first()
+        if user:
+            return user.to_dict(), 200  # Assuming to_dict is from SerializerMixin
+        return {'message': 'User not found'}, 404
+
+    def post(self):
+        data = request.get_json()
+        
+        # Check if the username already exists
+        existing_user = UserProfile.query.filter_by(username=data['username']).first()
+        if existing_user:
+            return {'message': 'Username already exists.'}, 400
+        
+        # Create new user if username is unique
+        new_user = UserProfile(
+            username=data['username'],
+            email=data['email'],
+            age=data['age'],
+            password=data['password']  # Remember to hash the password in a real app
+        )
+        
+        db.session.add(new_user)
+        db.session.commit()
+        return make_response({'message': 'User created successfully'}, 201)
 
 # ------------------------- User Resources -------------------------
 class UserRegisterResource(Resource):
@@ -68,13 +100,13 @@ class IncidentListResource(Resource):
 
         # Check if required fields are present in the request
         if not data:
-            return jsonify({"message": "Request body must be in JSON format"}), 400
+            return make_response({"message": "Request body must be in JSON format"}, 400)
 
         required_fields = ['description', 'latitude', 'longitude']
         
         for field in required_fields:
             if field not in data:
-                return jsonify({"message": f"'{field}' is required"}), 400
+                return make_response({"message": f"'{field}' is required"}, 400)
 
         description = data['description']
         latitude = data['latitude']
@@ -212,6 +244,7 @@ class IncidentVideoSingleResource(Resource):
         return make_response({"message": "Incident video deleted"}, 204)
 
 # ------------------------- API Routes Setup -------------------------
+api.add_resource(UserProfileResource, '/user_profiles')
 api.add_resource(UserRegisterResource, '/users')
 api.add_resource(UserLoginResource, '/login')
 api.add_resource(UserLogoutResource, '/logout')
