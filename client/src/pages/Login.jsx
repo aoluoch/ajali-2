@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Mail, Lock, LogIn, UserCircle, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, Mail, Lock, LogIn, UserCircle, ArrowLeft, LogOut } from 'lucide-react';
 
 export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -30,6 +30,7 @@ export default function Login() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, password }),
+            credentials: 'include',  // Include cookies for session handling
           });
 
       const data = await response.json();
@@ -38,11 +39,30 @@ export default function Login() {
         throw new Error(data.message || 'Something went wrong');
       }
 
-      // Redirect to dashboard on success
+      // Redirect to dashboard on successful login
       navigate('/dashboard');
     } catch (error) {
       console.error(error);
       setError(isRegistering ? 'Failed to create account' : 'Failed to sign in');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',  // Include cookies for session handling
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to log out');
+      }
+
+      // On successful logout, navigate to login page
+      navigate('/login');
+    } catch (error) {
+      console.error(error);
+      setError('Failed to log out');
     }
   };
 
@@ -174,6 +194,19 @@ export default function Login() {
               </button>
             )}
           </div>
+
+          {/* Logout button */}
+          {!isRegistering && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={handleLogout}
+                className="text-sm text-red-600 hover:text-red-500 flex items-center justify-center"
+              >
+                <LogOut className="h-5 w-5 mr-1" />
+                Logout
+              </button>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>
