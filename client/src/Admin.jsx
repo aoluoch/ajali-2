@@ -1,49 +1,55 @@
 import React from 'react';
-import './Admin.css';
+import { Link } from 'react-router-dom';
+import { FaBell, FaCog } from 'react-icons/fa'; // Importing icons from react-icons
 
 const Admin = () => {
-    
-  const username = "Admin User";
+    return (
+        <div className="flex h-screen bg-white">
+            {/* Sidebar */}
+            <div className="bg-red-600 text-white shadow-md w-64">
+                <h2 className="text-2xl font-bold p-6 flex items-center">Admin Dashboard</h2>
+                <ul className="mt-6">
+                    <li className="p-4 hover:bg-red-400 cursor-pointer">
+                        <Link to="/">Dashboard</Link>
+                    </li>
+                    <li className="p-4 hover:bg-red-400 cursor-pointer">
+                        <Link to="/manage-incidents">Manage Incidents</Link>
+                    </li>
+                    <li className="p-4 hover:bg-red-400 cursor-pointer">
+                        <Link to="/notifications">Notifications</Link>
+                    </li>
+                    <li className="p-4 hover:bg-red-400 cursor-pointer">
+                        <Link to="/settings">Settings</Link>
+                    </li>
+                </ul>
+            </div>
 
-  return (
-    <div className="admin-container">
-      {/* Sidebar */}
-      <div className="sidebar bg-gray-800 text-white w-64 h-screen">
-        <div className="sidebar-header p-4 text-xl font-bold">
-          Admin Dashboard
-        </div>
-        <ul className="sidebar-links p-4 space-y-4">
-          <li>
-            <a href="/" className="text-gray-300 hover:text-white">Dashboard</a>
-          </li>
-          <li>
-            <a href="/home" className="text-gray-300 hover:text-white">Home</a>
-          </li>
-        </ul>
-      </div>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col">
+                {/* Top Navbar */}
+                <div className="flex items-center justify-between bg-red-600 text-white shadow-md p-6 border-b border-black">
+                    <div className="flex items-center">
+                        <Link to="/" className="text-xl font-bold">Ajali!</Link>
+                    </div>
+                    <div className="flex items-center space-x-6">
+                        <Link to="/incident-reports" className="hover:text-gray-300">Incident Reports</Link>
+                        <div className="relative cursor-pointer">
+                            <FaBell className="text-white" />
+                            <span className="absolute -top-1 -right-2 bg-black text-white text-xs rounded-full px-1">2</span>
+                        </div>
+                        <FaCog className="cursor-pointer text-white" />
+                        <Link to="/logout" className="hover:text-gray-300">Logout</Link>
+                    </div>
+                </div>
 
-      {/* Main Content */}
-      <div className="main-content flex-1 flex flex-col">
-        {/* Navbar */}
-        <div className="navbar bg-gray-800 text-white p-4 flex justify-between items-center">
-          <div className="navbar-left flex space-x-6">
-            <a href="/user-home" className="hover:text-gray-300">User Home</a>
-            <a href="/report-incident" className="hover:text-gray-300">Report New Incident</a>
-          </div>
-          <div className="navbar-right flex items-center space-x-4">
-            <span>{username}</span>
-            <button className="text-red-400 hover:text-red-600">Logout</button>
-          </div>
+                {/* Main Content Area */}
+                <div className="flex-1 p-6">
+                    <h1 className="text-3xl font-semibold text-black">Welcome to the Admin Dashboard!</h1>
+                    {/* Add your routing logic here to display different components */}
+                </div>
+            </div>
         </div>
-
-        {/* Main Dashboard Content */}
-        <div className="content p-6">
-          <h1 className="text-3xl font-bold mb-4">Welcome to the Admin Dashboard</h1>
-          <p>Manage incidents and monitor system status.</p>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Admin;
