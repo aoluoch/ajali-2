@@ -7,6 +7,12 @@ import MyProfile from "./pages/MyProfile";
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Footer from "./components/Footer";
+import Admin from './components/Admin';
+import ContactForm from './pages/ContactPage'; // Import the ContactPage component
+import Settings from './pages/Settings'; // Import the Settings component
+import Notifications from './pages/Notifications';
+import ManageIncidents from './pages/Manageincidents';
+
 
 
 function App() {
@@ -23,6 +29,12 @@ function App() {
               <Route path="/profile" element={<MyProfile />} />
               <Route path="/login" element={<Login />} /> {/* If login page is needed */}
               <Route path="/landing" element={<LandingPage />} /> {/* If landing page is needed */}
+              <Route path="/admin" element={<Admin />} /> 
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/manage-incidents" element={<ManageIncidents/>} />
+              
+              <Route path="/contact" element={<ContactForm />} />
+              <Route path="/settings" element={<Settings />} /> 
               {/* <Route path="/footer" element={<Footer />} /> If footer is needed */}
             </Routes>
             <Footer />
