@@ -83,27 +83,18 @@ To set up and run the Ajali! website frontend locally, follow the steps below:
 
 1. **Clone the Repository**
 
-   ```bash
-   git clone https://github.com/your-repo/ajali-frontend.git
-   cd ajali-frontend
+   git clone https://github.com/aoluoch/ajali-2
+   cd ajali-2
 
 2.  **Install Dependencies**
 
     Install the required npm packages:
-
-    bash
-
-    Copy code
 
     `npm install`
 
 3.  **Start Development Server**
 
     Run the development server using Vite:
-
-    bash
-
-    Copy code
 
     `npm run dev`
 
@@ -132,36 +123,23 @@ We welcome contributions from the community! To contribute to this project, foll
     -   Click on the "Fork" button at the top right of the repository page.
 2.  **Clone the Forked Repository**:
 
-    bash
-
-    Copy code
 
     `git clone https://github.com/your-username/ajali-frontend.git`
 
 3.  **Create a New Branch**:
 
-    bash
-
-    Copy code
-
+   
     `git checkout -b feature-name`
 
 4.  **Make Changes**: Implement your changes in the code.
 
 5.  **Commit Changes**:
 
-    bash
-
-    Copy code
-
     `git add .
     git commit -m "Add a descriptive commit message"`
 
 6.  **Push to Your Fork**:
 
-    bash
-
-    Copy code
 
     `git push origin feature-name`
 
@@ -179,7 +157,5 @@ This project is licensed under the MIT License - see the <LICENSE> file for deta
 **Ajali!** -- Emergency Alerts Made Easy. Empowering citizens to report accidents and emergencies instantly.
 
 csharp
-
-Copy code
 
  `This version of the README specifically focuses on the **frontend** components, features, and installation for the Ajali! project. The backend integration details have been kept minimal, as it is only relevant for how the frontend interacts with the API.`
