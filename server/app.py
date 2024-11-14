@@ -27,6 +27,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Session lasts 1 
 db.init_app(app)
 migrate = Migrate(app, db)
 
+
 # ---------------- Session Helper Functions ----------------
 def login_required(f):
     @wraps(f)
