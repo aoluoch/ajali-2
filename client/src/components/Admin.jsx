@@ -32,7 +32,7 @@ const Admin = () => {
                         <Link to="/" className="text-xl font-bold">Ajali!</Link>
                     </div>
                     <div className="flex items-center space-x-6">
-                        <Link to="/incident-reports" className="hover:text-gray-300">Incident Reports</Link>
+                        {/* Removed Incident Reports link */}
                         <div className="relative cursor-pointer">
                             <FaBell className="text-white" />
                             <span className="absolute -top-1 -right-2 bg-black text-white text-xs rounded-full px-1">2</span>

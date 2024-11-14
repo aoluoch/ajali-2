@@ -32,42 +32,42 @@ const ContactForm = () => {
   };
 
   return (
-    <div className="flex justify-start items-start lg:p-5 font-Encode-Sans mt-10">
-      <div className="w-full max-w-lg">
-        <h3 className="text-left text-6xl pb-6 font-bold">Contact</h3>
-        {formError && <p className="text-red-600 text-xl">{errorMessage}</p>}
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
+        <h3 className="text-left text-4xl pb-6 font-bold text-gray-800">Contact Us</h3>
+        {formError && <p className="text-red-600 text-lg">{errorMessage}</p>}
         {formSubmitted ? (
-          <p className="text-green-500 text-xl">Thank you for your message! We'll get back to you shortly!</p>
+          <p className="text-green-500 text-lg">Thank you for your message! We'll get back to you shortly!</p>
         ) : (
           <form ref={form} onSubmit={sendEmail}>
-            <div className="mb-4 flex items-center">
-              <label className="w-1/3 text-gray-700 text-lg">Name</label>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-lg">Name</label>
               <input
                 type="text"
                 name="name"
                 required
                 placeholder="Your Name"
-                className="w-2/3 border border-gray-300 rounded-md p-3 text-lg focus:outline-none focus:ring focus:ring-indigo-200 transition duration-200"
+                className="w-full border border-gray-300 rounded-md p-3 text-lg focus:outline-none focus:ring focus:ring-indigo-200 transition duration-200"
               />
             </div>
-            <div className="mb-4 flex items-center">
-              <label className="w-1/3 text-gray-700 text-lg">Email</label>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-lg">Email</label>
               <input
                 type="email"
                 name="email"
                 required
                 placeholder="Your Email"
-                className="w-2/3 border border-gray-300 rounded-md p-3 text-lg focus:outline-none focus:ring focus:ring-indigo-200 transition duration-200"
+                className="w-full border border-gray-300 rounded-md p-3 text-lg focus:outline-none focus:ring focus:ring-indigo-200 transition duration-200"
               />
             </div>
-            <div className="mb-4 flex items-center">
-              <label className="w-1/3 text-gray-700 text-lg">Phone Number</label>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-lg">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
                 required
                 placeholder="Your Phone Number"
-                className="w-2/3 border border-gray-300 rounded-md p-3 text-lg focus:outline-none focus:ring focus:ring-indigo-200 transition duration-200"
+                className="w-full border border-gray-300 rounded-md p-3 text-lg focus:outline-none focus:ring focus:ring-indigo-200 transition duration-200"
               />
             </div>
             <div className="mb-4">
@@ -82,9 +82,10 @@ const ContactForm = () => {
             </div>
             <button
               type="submit"
-              className="bg-blue-500 text-white rounded-md p-3 text-lg hover:bg-blue-600 transition duration-200"
+              className={`bg-blue-500 text-white rounded-md p-3 text-lg hover:bg-blue-600 transition duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={loading}
             >
-              Send
+              {loading ? 'Sending...' : 'Send'}
             </button>
           </form>
         )}
