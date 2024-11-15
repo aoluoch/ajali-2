@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'; // Assuming you're using react-router for navigation
 import { useSelector } from 'react-redux';
-import AjaliLogo from './AjaliLogo'; // Import your logo component here
+import AjaliLogo from '../assets/ajali-logo.svg'; // Import your logo component here
 
 const AdminSidebar = () => {
   const user = useSelector((state) => state.user); // Assuming user info is in the state

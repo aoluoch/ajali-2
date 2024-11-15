@@ -1,6 +1,6 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
 import PropTypes from 'prop-types';
+import cn from 'classnames'; // Add this line to import the 'cn' function
 
 const EmergencyContactCard = React.forwardRef(({ className, icon: Icon, title, number, ...props }, ref) => (
     <div
