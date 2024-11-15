@@ -1,6 +1,15 @@
 // src/store/slices/incidentSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getIncidents, createIncident, updateIncident, deleteIncident } from '../api';  // Import API calls
+import { 
+  getIncidents, 
+  createIncident, 
+  updateIncident, 
+  deleteIncident, 
+  postIncidentImage, 
+  deleteIncidentImage, 
+  postIncidentVideo, 
+  deleteIncidentVideo 
+} from '../api';  // Import API calls
 
 // Async Thunks
 export const fetchIncidents = createAsyncThunk('incidents/fetchAll', async (_, { rejectWithValue }) => {
@@ -34,6 +43,46 @@ export const removeIncident = createAsyncThunk('incidents/delete', async (id, { 
   try {
     await deleteIncident(id);
     return id;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
+});
+
+// New Async Thunks for Incident Images and Videos
+
+// Incident Image Thunks
+export const addIncidentImage = createAsyncThunk('incidents/addImage', async ({ incidentId, imageUrl }, { rejectWithValue }) => {
+  try {
+    const response = await postIncidentImage(incidentId, imageUrl);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
+});
+
+export const removeIncidentImage = createAsyncThunk('incidents/removeImage', async ({ incidentId, imageId }, { rejectWithValue }) => {
+  try {
+    await deleteIncidentImage(incidentId, imageId);
+    return { incidentId, imageId };
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
+});
+
+// Incident Video Thunks
+export const addIncidentVideo = createAsyncThunk('incidents/addVideo', async ({ incidentId, videoUrl }, { rejectWithValue }) => {
+  try {
+    const response = await postIncidentVideo(incidentId, videoUrl);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
+});
+
+export const removeIncidentVideo = createAsyncThunk('incidents/removeVideo', async ({ incidentId, videoId }, { rejectWithValue }) => {
+  try {
+    await deleteIncidentVideo(incidentId, videoId);
+    return { incidentId, videoId };
   } catch (error) {
     return rejectWithValue(error.response.data);
   }
@@ -105,6 +154,66 @@ const incidentSlice = createSlice({
         state.incidents = state.incidents.filter((incident) => incident.id !== action.payload);
       })
       .addCase(removeIncident.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Add Incident Image
+      .addCase(addIncidentImage.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addIncidentImage.fulfilled, (state, action) => {
+        state.loading = false;
+        const incident = state.incidents.find((incident) => incident.id === action.payload.incidentId);
+        if (incident) {
+          incident.images = incident.images ? [...incident.images, action.payload] : [action.payload];
+        }
+      })
+      .addCase(addIncidentImage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Remove Incident Image
+      .addCase(removeIncidentImage.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(removeIncidentImage.fulfilled, (state, action) => {
+        state.loading = false;
+        const incident = state.incidents.find((incident) => incident.id === action.payload.incidentId);
+        if (incident) {
+          incident.images = incident.images.filter((image) => image.id !== action.payload.imageId);
+        }
+      })
+      .addCase(removeIncidentImage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Add Incident Video
+      .addCase(addIncidentVideo.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(addIncidentVideo.fulfilled, (state, action) => {
+        state.loading = false;
+        const incident = state.incidents.find((incident) => incident.id === action.payload.incidentId);
+        if (incident) {
+          incident.videos = incident.videos ? [...incident.videos, action.payload] : [action.payload];
+        }
+      })
+      .addCase(addIncidentVideo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Remove Incident Video
+      .addCase(removeIncidentVideo.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(removeIncidentVideo.fulfilled, (state, action) => {
+        state.loading = false;
+        const incident = state.incidents.find((incident) => incident.id === action.payload.incidentId);
+        if (incident) {
+          incident.videos = incident.videos.filter((video) => video.id !== action.payload.videoId);
+        }
+      })
+      .addCase(removeIncidentVideo.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

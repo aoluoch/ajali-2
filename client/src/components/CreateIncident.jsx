@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux'; // Import Redux hooks
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
-import PropTypes from 'prop-types'; // Import PropTypes
+import PropTypes from 'prop-types';
+import { createIncident } from "../store/slices/incidentSlice"; // Import the createIncident function
 
 const CreateIncident = ({ match }) => {
+  const dispatch = useDispatch(); // Initialize dispatch
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [incidentType, setIncidentType] = useState('Red Flag');
@@ -64,40 +67,35 @@ const CreateIncident = ({ match }) => {
     event.preventDefault();
     setIsSubmitting(true);
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('incidentType', incidentType);
-    formData.append('latitude', manualLat);
-    formData.append('longitude', manualLng);
-    if (file) formData.append('file', file);
+    const formData = {
+      title,
+      description,
+      incidentType,
+      latitude: manualLat,
+      longitude: manualLng,
+      file
+    };
 
-    const url = isEditing
-      ? `http://127.0.0.1:5000/incidents/${incidentId}`
-      : `http://127.0.0.1:5000/incidents`;
-
-    const method = isEditing ? 'PUT' : 'POST';
-
-    fetch(url, {
-      method,
-      body: formData,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          setErrorMessage('Failed to submit incident');
-        }
-        setIsSubmitting(false);
-      })
-      .catch(() => {
-        setErrorMessage('Error while submitting the form');
-        setIsSubmitting(false);
-      });
+    if (isEditing) {
+      // Call the edit incident action here
+      console.log('Editing incident...');
+    } else {
+      // Dispatch the createIncident action with the form data
+      dispatch(createIncident(incidentId, formData))
+        .then(() => {
+          setIsSubmitting(false);
+        })
+        .catch(() => {
+          setErrorMessage('Error while submitting the form');
+          setIsSubmitting(false);
+        });
+    }
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-semibold mb-6 text-center sm:text-left">{isEditing ? 'Edit Incident' : 'Create New Incident'}</h1>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
+      <form onSubmit={handleSubmit}>
         {/* Title Input */}
         <div className="mb-4">
           <label htmlFor="title" className="block text-lg font-medium text-gray-700">Title</label>
