@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Phone, Shield, Clock } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "../components/EmergencyContactCard";
 import PropTypes from 'prop-types';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
