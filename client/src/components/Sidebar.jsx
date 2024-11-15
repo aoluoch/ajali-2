@@ -1,44 +1,32 @@
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   return (
     <aside className="w-64 bg-red-600 text-white p-4">
       <ul className="space-y-4">
         <li>
-          <NavLink 
+          <Link 
             to="/" 
-            className={({ isActive }) => 
-              isActive
-                ? 'block py-2 px-4 bg-white text-red-600 rounded-md'  
-                : 'block py-2 px-4 hover:bg-red-700 rounded-md'       
-            }
+            className="block py-2 px-4 hover:bg-red-700 rounded-md"
           >
             Dashboard
-          </NavLink>
+          </Link>
         </li>
         <li>
-          <NavLink 
+          <Link 
             to="/create-incident" 
-            className={({ isActive }) => 
-              isActive
-                ? 'block py-2 px-4 bg-white text-red-600 rounded-md'  
-                : 'block py-2 px-4 hover:bg-red-700 rounded-md'       
-            }
+            className="block py-2 px-4 hover:bg-red-700 rounded-md"
           >
             Create New Incident
-          </NavLink>
+          </Link>
         </li>
         <li>
-          <NavLink 
+          <Link 
             to="/profile" 
-            className={({ isActive }) => 
-              isActive
-                ? 'block py-2 px-4 bg-white text-red-600 rounded-md'  
-                : 'block py-2 px-4 hover:bg-red-700 rounded-md'       
-            }
+            className="block py-2 px-4 hover:bg-red-700 rounded-md"
           >
             My Profile
-          </NavLink>
+          </Link>
         </li>
       </ul>
     </aside>

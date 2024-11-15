@@ -1,24 +1,27 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
-import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
-import "leaflet-geosearch/dist/geosearch.css"; // Import styles for GeoSearch
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 'react-leaflet';
+import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
+import PropTypes from 'prop-types'; // Import PropTypes
 
-const CreateIncident = () => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [incidentType, setIncidentType] = useState(""); // Empty initially
-  const [mediaFiles, setMediaFiles] = useState([]);
-  const [location, setLocation] = useState(null);
-  const [manualCoordinates, setManualCoordinates] = useState("");
+const CreateIncident = ({ match }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [incidentType, setIncidentType] = useState('Red Flag');
+  const [file, setFile] = useState(null);
+  const [location, setLocation] = useState([-1.285573, 36.830845]); // Default Moringa School coordinates
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [incidentId, setIncidentId] = useState(null); // For editing
 
   const LocationSetter = () => {
     useMapEvents({
       click(e) {
         setLocation([e.latlng.lat, e.latlng.lng]);
-        setManualCoordinates(`${e.latlng.lat}, ${e.latlng.lng}`);
+        setManualLat(e.latlng.lat);
+        setManualLng(e.latlng.lng);
       },
     });
     return null;
@@ -30,205 +33,156 @@ const CreateIncident = () => {
       const provider = new OpenStreetMapProvider();
       const searchControl = new GeoSearchControl({
         provider,
-        style: "bar",
-        searchLabel: "Type location here to search...",
-        autoClose: true,
-        showMarker: true,
-        keepResult: true,
+        style: 'button',
       });
       map.addControl(searchControl);
-
-      map.on("geosearch/showlocation", (result) => {
-        const { x: lng, y: lat } = result.location;
-        setLocation([lat, lng]);
-        setManualCoordinates(`${lat}, ${lng}`);
-      });
-
       return () => map.removeControl(searchControl);
     }, [map]);
     return null;
   };
 
-  const handleAddMedia = (event) => {
-    const files = Array.from(event.target.files);
-    setMediaFiles((prevFiles) => [...prevFiles, ...files]);
-  };
+  // Fetch incident data for editing
+  useEffect(() => {
+    if (match && match.params.id) {
+      setIsEditing(true);
+      setIncidentId(match.params.id); // Get incidentId from URL
+      fetch(`http://127.0.0.1:5000/incidents/${match.params.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setTitle(data.title);
+          setDescription(data.description);
+          setIncidentType(data.incidentType);
+          setLocation(data.location); // Ensure you set the correct location
+          setManualLat(data.location[0]);
+          setManualLng(data.location[1]);
+        })
+        .catch(err => console.error('Error fetching incident:', err));
+    }
+  }, [match]);
 
-  const handleRemoveMedia = (index) => {
-    setMediaFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    if (!mediaFiles.length) {
-      setErrorMessage("Please upload at least one media file.");
-      return;
-    }
-    if (!location) {
-      setErrorMessage("Please select a location.");
-      return;
-    }
-
     setIsSubmitting(true);
+
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("incidentType", incidentType);
-    formData.append("latitude", location[0]);
-    formData.append("longitude", location[1]);
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('incidentType', incidentType);
+    formData.append('latitude', manualLat);
+    formData.append('longitude', manualLng);
+    if (file) formData.append('file', file);
 
-    mediaFiles.forEach((file, index) => {
-      formData.append(`media[${index}]`, file);
-    });
+    const url = isEditing
+      ? `http://127.0.0.1:5000/incidents/${incidentId}`
+      : `http://127.0.0.1:5000/incidents`;
 
-    try {
-      const response = await axios.post("http://127.0.0.1:5000/incidents", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+    const method = isEditing ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method,
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          setErrorMessage('Failed to submit incident');
+        }
+        setIsSubmitting(false);
+      })
+      .catch(() => {
+        setErrorMessage('Error while submitting the form');
+        setIsSubmitting(false);
       });
-      console.log("Incident created:", response.data);
-      setIsSubmitting(false);
-    } catch (error) {
-      console.error("Error submitting incident:", error);
-      setErrorMessage("Failed to submit incident. Please try again.");
-      setIsSubmitting(false);
-    }
   };
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-semibold mb-6 text-center sm:text-left">Create New Incident</h1>
-      <form onSubmit={handleSubmit}>
+      <h1 className="text-3xl font-semibold mb-6 text-center sm:text-left">{isEditing ? 'Edit Incident' : 'Create New Incident'}</h1>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         {/* Title Input */}
         <div className="mb-4">
-          <label htmlFor="title" className="block text-lg font-medium text-gray-700">
-            Title <span className="text-red-500">*</span>
-          </label>
+          <label htmlFor="title" className="block text-lg font-medium text-gray-700">Title</label>
           <input
             type="text"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md"
-            placeholder="Enter a short and descriptive title"
+            className="w-full p-3 border border-gray-300 rounded-md text-base sm:text-lg"
             required
           />
         </div>
 
         {/* Description Input */}
         <div className="mb-4">
-          <label htmlFor="description" className="block text-lg font-medium text-gray-700">
-            Description <span className="text-red-500">*</span>
-          </label>
+          <label htmlFor="description" className="block text-lg font-medium text-gray-700">Description</label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md"
-            placeholder="Provide details about the incident"
+            className="w-full p-3 border border-gray-300 rounded-md text-base sm:text-lg"
             required
           />
         </div>
 
         {/* Incident Type */}
         <div className="mb-4">
-          <label htmlFor="incidentType" className="block text-lg font-medium text-gray-700">
-            Incident Type <span className="text-red-500">*</span>
-          </label>
-          <p className="text-sm text-gray-600 mb-2">
-            <strong>Red Flag:</strong> Critical issues requiring urgent attention (e.g., accidents or emergencies).
-            <br />
-            <strong>Intervention:</strong> Issues needing action but not immediately critical (e.g., hazardous road conditions).
-          </p>
+          <label htmlFor="incidentType" className="block text-lg font-medium text-gray-700">Incident Type</label>
           <select
             id="incidentType"
             value={incidentType}
             onChange={(e) => setIncidentType(e.target.value)}
-            className={`w-full p-3 border border-gray-300 rounded-md text-white ${
-              !incidentType ? 'bg-gray-200' : incidentType === "Red Flag" ? "bg-red-600" : "bg-[#FFEB3B]"
-            }`}
+            className="w-full p-3 border border-gray-300 rounded-md text-base sm:text-lg"
           >
-            <option value="" disabled className="text-gray-500">Select Incident Type</option>
-            <option value="Red Flag" className="text-white">Red Flag</option>
-            <option value="Intervention" className="text-white">Intervention</option>
+            <option value="Red Flag">Red Flag</option>
+            <option value="Intervention">Intervention</option>
           </select>
         </div>
 
-        {/* Media Upload */}
+        {/* Attachments */}
         <div className="mb-4">
-          <label htmlFor="media" className="block text-lg font-medium text-gray-700">
-            Media Attachments <span className="text-red-500">*</span>
-          </label>
+          <label htmlFor="file" className="block text-lg font-medium text-gray-700">Attachment (Image/Video)</label>
           <input
             type="file"
-            id="media"
-            multiple
-            accept="image/*,video/*"
-            onChange={handleAddMedia}
-            className="w-full p-3 border border-gray-300 rounded-md"
+            id="file"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="w-full p-3 border border-gray-300 rounded-md text-base sm:text-lg"
           />
-          <div className="mt-2 flex flex-wrap gap-4">
-            {mediaFiles.map((file, index) => (
-              <div key={index} className="relative">
-                {file.type.startsWith("image/") ? (
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-md"
-                  />
-                ) : (
-                  <video
-                    src={URL.createObjectURL(file)}
-                    controls
-                    className="w-32 h-32 object-cover rounded-md"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveMedia(index)}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-2 py-1 text-xs"
-                >
-                  X
-                </button>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Map and Location Input */}
-        <div className="mb-4">
-          <label className="block text-lg font-medium text-gray-700">
-            Location <span className="text-red-500">*</span>
-          </label>
-          <p className="text-sm text-gray-600 mb-2">
-            Click on the map or use the search bar to select a location.
-          </p>
-          <MapContainer center={[-1.285573, 36.830845]} zoom={12} style={{ height: "300px", width: "100%" }}>
+        {/* Map */}
+        <div className="mb-6">
+          <MapContainer center={location} zoom={12} style={{ height: '300px', width: '100%' }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <LocationSetter />
             <AddGeoSearch />
-            {location && (
-              <Marker position={location}>
-                <Popup>Incident Location</Popup>
-              </Marker>
-            )}
+            <Marker position={location}>
+              <Popup>Incident Location</Popup>
+            </Marker>
           </MapContainer>
         </div>
 
         {/* Submit Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center sm:justify-between">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto bg-blue-600 text-white p-3 rounded-md"
+            className="w-full sm:w-auto bg-blue-600 text-white p-3 rounded-md text-lg"
           >
-            {isSubmitting ? "Submitting..." : "Create Incident"}
+            {isSubmitting ? 'Submitting...' : isEditing ? 'Save Changes' : 'Create Incident'}
           </button>
         </div>
       </form>
 
-      {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+      {errorMessage && <div className="text-red-500 mt-4 text-center">{errorMessage}</div>}
     </div>
   );
+};
+
+CreateIncident.propTypes = {
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      id: PropTypes.string
+    })
+  })
 };
 
 export default CreateIncident;
