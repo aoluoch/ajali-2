@@ -1,9 +1,8 @@
 from sqlalchemy_serializer import SerializerMixin
 from models.extensions import db
-from flask_login import UserMixin
 
 
-class User(db.Model, SerializerMixin, UserMixin):
+class User(db.Model, SerializerMixin,):
     __tablename__ = 'users'
 
     serialize_rules = ('-reports',)
