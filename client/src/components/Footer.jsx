@@ -10,6 +10,11 @@ export function Footer() {
         <p className="text-gray-400 text-sm mt-2">
           © {new Date().getFullYear()} Ajali! Emergency Response System
         </p>
+        <div className="mt-4">
+          <a href="/about" className="text-gray-400 hover:text-white mx-2">About Us</a>
+          <a href="/contact" className="text-gray-400 hover:text-white mx-2">Contact Us</a>
+          <a href="/terms" className="text-gray-400 hover:text-white mx-2">Terms and Conditions</a>
+        </div>
       </div>
     </footer>
   );
