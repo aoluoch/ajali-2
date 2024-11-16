@@ -11,7 +11,7 @@ import Admin from './components/Admin';
 import ContactForm from './pages/ContactPage'; // Import the ContactPage component
 import Settings from './pages/Settings'; // Import the Settings component
 import Notifications from './pages/Notifications';
-import ManageIncidents from './pages/Manageincidents';
+import ManageIncidents from './pages/ManageIncidents';
 
 
 
