@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
-import Header from '../components/Header'; // Already imported
+import Header from '../components/Header'; 
 
 const HomePage = () => {
   const [filter, setFilter] = useState("All");
@@ -62,95 +62,91 @@ const HomePage = () => {
   });
 
   return (
-    <div>
-      {/* Use the Header component */}
-      <Header /> 
+    // Wrap everything in a single parent div or fragment
+    <div className="p-6">
+      {/* Search Bar */}
+      <div className="flex justify-between items-center mb-6 flex-wrap">
+        <input
+          type="text"
+          placeholder="Search incidents by title..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md w-full sm:w-2/3 md:w-1/2 lg:w-1/3"
+        />
+      </div>
 
-      <div className="p-6">
-        {/* Search Bar */}
-        <div className="flex justify-between items-center mb-6 flex-wrap">
-          <input
-            type="text"
-            placeholder="Search incidents by title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md w-full sm:w-2/3 md:w-1/2 lg:w-1/3"
-          />
-        </div>
+      {/* Filter Dropdown */}
+      <div className="flex justify-between items-center mb-6 flex-wrap">
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md w-full sm:w-1/3"
+        >
+          <option value="All">All</option>
+          <option value="Under Investigation">Under Investigation</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      </div>
 
-        {/* Filter Dropdown */}
-        <div className="flex justify-between items-center mb-6 flex-wrap">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md w-full sm:w-1/3"
-          >
-            <option value="All">All</option>
-            <option value="Under Investigation">Under Investigation</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-        </div>
-
-        {/* Incident Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredIncidents.map((incident) => (
-            <div key={incident.id} className="bg-white p-6 rounded-md shadow-lg">
-              {/* Incident Overview */}
-              <h3 className="text-xl font-semibold mb-2">{incident.title}</h3>
-              <p className="text-gray-700 mb-2">{incident.description}</p>
-              <div
-                className={`inline-block px-3 py-1 text-white rounded-md mb-4 ${
-                  incident.status === "Resolved" ? "bg-green-500" :
-                  incident.status === "Under Investigation" ? "bg-yellow-500" :
-                  "bg-red-500"
-                }`}
-              >
-                {incident.status}
-              </div>
-
-              {/* Media Gallery */}
-              <Carousel showThumbs={false} dynamicHeight={true} className="mb-4">
-                {incident.media.map((item, index) => (
-                  <div key={index}>
-                    {item.type === "image" ? (
-                      <img src={item.src} alt="Incident media" className="w-full h-48 object-cover rounded-md" />
-                    ) : (
-                      <video controls className="w-full h-48 rounded-md">
-                        <source src={item.src} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
-                  </div>
-                ))}
-              </Carousel>
-
-              {/* Map for Incident Location */}
-              <MapContainer center={incident.location} zoom={13} style={{ height: '200px' }} className="rounded-md shadow-md">
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={incident.location}>
-                  <Popup>{incident.title}</Popup>
-                </Marker>
-              </MapContainer>
+      {/* Incident Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredIncidents.map((incident) => (
+          <div key={incident.id} className="bg-white p-6 rounded-md shadow-lg">
+            {/* Incident Overview */}
+            <h3 className="text-xl font-semibold mb-2">{incident.title}</h3>
+            <p className="text-gray-700 mb-2">{incident.description}</p>
+            <div
+              className={`inline-block px-3 py-1 text-white rounded-md mb-4 ${
+                incident.status === "Resolved" ? "bg-green-500" :
+                incident.status === "Under Investigation" ? "bg-yellow-500" :
+                "bg-red-500"
+              }`}
+            >
+              {incident.status}
             </div>
-          ))}
-        </div>
 
-        {/* Map Displaying All Incidents */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Map of All Incidents</h2>
-          <MapContainer center={[-1.286389, 36.817223]} zoom={12} style={{ height: '400px' }} className="rounded-md shadow-lg">
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            {incidents.map((incident) => (
-              <Marker key={incident.id} position={incident.location}>
-                <Popup>
-                  <strong>{incident.title}</strong><br />
-                  {incident.description}
-                </Popup>
+            {/* Media Gallery */}
+            <Carousel showThumbs={false} dynamicHeight={true} className="mb-4">
+              {incident.media.map((item, index) => (
+                <div key={index}>
+                  {item.type === "image" ? (
+                    <img src={item.src} alt="Incident media" className="w-full h-48 object-cover rounded-md" />
+                  ) : (
+                    <video controls className="w-full h-48 rounded-md">
+                      <source src={item.src} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                </div>
+              ))}
+            </Carousel>
+
+            {/* Map for Incident Location */}
+            <MapContainer center={incident.location} zoom={13} style={{ height: '200px' }} className="rounded-md shadow-md">
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={incident.location}>
+                <Popup>{incident.title}</Popup>
               </Marker>
-            ))}
-          </MapContainer>
-        </div>
+            </MapContainer>
+          </div>
+        ))}
+      </div>
+
+      {/* Map Displaying All Incidents */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Map of All Incidents</h2>
+        <MapContainer center={[-1.286389, 36.817223]} zoom={12} style={{ height: '400px' }} className="rounded-md shadow-lg">
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {incidents.map((incident) => (
+            <Marker key={incident.id} position={incident.location}>
+              <Popup>
+                <strong>{incident.title}</strong><br />
+                {incident.description}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
       </div>
     </div>
   );
