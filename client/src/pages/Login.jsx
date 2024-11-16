@@ -40,7 +40,7 @@ export default function Login() {
       }
 
       // Redirect to dashboard on successful login
-      navigate('/home');
+      navigate('/dashboard');
     } catch (error) {
       console.error(error);
       setError(isRegistering ? 'Failed to create account' : 'Failed to sign in');

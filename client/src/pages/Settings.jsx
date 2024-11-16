@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, Shield, Key, Activity, Server } from 'lucide-react'; // Importing icons from lucide-react
+import React, { useState } from 'react';
 
 const Settings = () => {
   // State management for toggling sections
@@ -52,23 +51,19 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-6 bg-[var(--color-neutral-100)] text-[var(--color-neutral-900)]">
+    <div className="settings-container p-6">
       <h1 className="text-3xl font-bold mb-4">Admin Settings</h1>
 
       {/* General Settings */}
       <div className="mb-6">
         <button
-          className="w-full text-left bg-[var(--color-primary-300)] p-3 rounded-md mb-2 flex items-center justify-between hover:bg-[var(--color-primary-400)]"
+          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
           onClick={() => handleToggle('general')}
         >
-          <div className="flex items-center space-x-2">
-            <Settings className="text-[var(--color-neutral-900)]" />
-            <span>General Settings</span>
-          </div>
-          {isGeneralOpen ? <ChevronUp /> : <ChevronDown />}
+          General Settings
         </button>
         {isGeneralOpen && (
-          <div className="bg-[var(--color-neutral-50)] p-4 rounded-md space-y-4">
+          <div className="bg-gray-100 p-4 rounded-md space-y-4">
             <div>
               <label className="block">Application Name:</label>
               <input
@@ -76,7 +71,7 @@ const Settings = () => {
                 name="appName"
                 value={formData.appName}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded-md border border-[var(--color-neutral-300)]"
+                className="w-full p-2 rounded-md border border-gray-300"
               />
             </div>
             <div>
@@ -85,7 +80,7 @@ const Settings = () => {
                 name="timezone"
                 value={formData.timezone}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded-md border border-[var(--color-neutral-300)]"
+                className="w-full p-2 rounded-md border border-gray-300"
               >
                 <option value="UTC">UTC</option>
                 <option value="GMT">GMT</option>
@@ -99,7 +94,7 @@ const Settings = () => {
                 name="passwordPolicy"
                 value={formData.passwordPolicy}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded-md border border-[var(--color-neutral-300)]"
+                className="w-full p-2 rounded-md border border-gray-300"
               />
             </div>
           </div>
@@ -109,18 +104,15 @@ const Settings = () => {
       {/* Security Settings */}
       <div className="mb-6">
         <button
-          className="w-full text-left bg-[var(--color-primary-300)] p-3 rounded-md mb-2 flex items-center justify-between hover:bg-[var(--color-primary-400)]"
+          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
           onClick={() => handleToggle('security')}
         >
-          <div className="flex items-center space-x-2">
-            <Shield className="text-[var(--color-neutral-900)]" />
-            <span>Security Settings</span>
-          </div>
-          {isSecurityOpen ? <ChevronUp /> : <ChevronDown />}
+          Security Settings
         </button>
         {isSecurityOpen && (
-          <div className="bg-[var(--color-neutral-50)] p-4 rounded-md space-y-4">
-            <div className="flex items-center space-x-2">
+          <div className="bg-gray-100 p-4 rounded-md space-y-4">
+            <div>
+              <label className="block">Enable Two-Factor Authentication (2FA):</label>
               <input
                 type="checkbox"
                 name="enable2FA"
@@ -128,10 +120,11 @@ const Settings = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, enable2FA: e.target.checked })
                 }
+                className="mr-2"
               />
-              <label>Enable Two-Factor Authentication (2FA)</label>
             </div>
-            <div className="flex items-center space-x-2">
+            <div>
+              <label className="block">Enable Cache:</label>
               <input
                 type="checkbox"
                 name="enableCache"
@@ -139,8 +132,8 @@ const Settings = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, enableCache: e.target.checked })
                 }
+                className="mr-2"
               />
-              <label>Enable Cache</label>
             </div>
           </div>
         )}
@@ -149,17 +142,13 @@ const Settings = () => {
       {/* API Management */}
       <div className="mb-6">
         <button
-          className="w-full text-left bg-[var(--color-primary-300)] p-3 rounded-md mb-2 flex items-center justify-between hover:bg-[var(--color-primary-400)]"
+          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
           onClick={() => handleToggle('api')}
         >
-          <div className="flex items-center space-x-2">
-            <Key className="text-[var(--color-neutral-900)]" />
-            <span>API Management</span>
-          </div>
-          {isApiOpen ? <ChevronUp /> : <ChevronDown />}
+          API Management
         </button>
         {isApiOpen && (
-          <div className="bg-[var(--color-neutral-50)] p-4 rounded-md space-y-4">
+          <div className="bg-gray-100 p-4 rounded-md space-y-4">
             <div>
               <label className="block">API Key:</label>
               <input
@@ -167,14 +156,14 @@ const Settings = () => {
                 name="apiKey"
                 value={formData.apiKey}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded-md border border-[var(--color-neutral-300)]"
+                className="w-full p-2 rounded-md border border-gray-300"
               />
             </div>
             <div>
               <label className="block">Rate Limiting:</label>
               <input
                 type="text"
-                className="w-full p-2 rounded-md border border-[var(--color-neutral-300)]"
+                className="w-full p-2 rounded-md border border-gray-300"
                 placeholder="Set API rate limit"
               />
             </div>
@@ -185,19 +174,19 @@ const Settings = () => {
       {/* Logs */}
       <div className="mb-6">
         <button
-          className="w-full text-left bg-[var(--color-primary-300)] p-3 rounded-md mb-2 flex items-center justify-between hover:bg-[var(--color-primary-400)]"
+          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
           onClick={() => handleToggle('logs')}
         >
-          <div className="flex items-center space-x-2">
-            <Activity className="text-[var(--color-neutral-900)]" />
-            <span>Logs</span>
-          </div>
-          {isLogsOpen ? <ChevronUp /> : <ChevronDown />}
+          Logs
         </button>
         {isLogsOpen && (
-          <div className="bg-[var(--color-neutral-50)] p-4 rounded-md space-y-4">
-            <p className="text-[var(--color-neutral-500)]">View recent activity logs</p>
-            <p className="text-[var(--color-neutral-500)]">View error logs</p>
+          <div className="bg-gray-100 p-4 rounded-md space-y-4">
+            <div>
+              <p className="text-gray-500">View recent activity logs</p>
+            </div>
+            <div>
+              <p className="text-gray-500">View error logs</p>
+            </div>
           </div>
         )}
       </div>
@@ -205,33 +194,33 @@ const Settings = () => {
       {/* Maintenance */}
       <div className="mb-6">
         <button
-          className="w-full text-left bg-[var(--color-primary-300)] p-3 rounded-md mb-2 flex items-center justify-between hover:bg-[var(--color-primary-400)]"
+          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
           onClick={() => handleToggle('maintenance')}
         >
-          <div className="flex items-center space-x-2">
-            <Server className="text-[var(--color-neutral-900)]" />
-            <span>System Maintenance</span>
-          </div>
-          {isMaintenanceOpen ? <ChevronUp /> : <ChevronDown />}
+          System Maintenance
         </button>
         {isMaintenanceOpen && (
-          <div className="bg-[var(--color-neutral-50)] p-4 rounded-md space-y-4">
+          <div className="bg-gray-100 p-4 rounded-md space-y-4">
             <div>
               <label className="block">Backup Schedule:</label>
               <select
                 name="backupSchedule"
                 value={formData.backupSchedule}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded-md border border-[var(--color-neutral-300)]"
+                className="w-full p-2 rounded-md border border-gray-300"
               >
-                <option value="Daily">Daily</option>
                 <option value="Weekly">Weekly</option>
                 <option value="Monthly">Monthly</option>
+                <option value="Daily">Daily</option>
               </select>
             </div>
           </div>
         )}
       </div>
+
+      <button className="bg-blue-500 text-white p-3 rounded-md mt-6">
+        Save Settings
+      </button>
     </div>
   );
 };
