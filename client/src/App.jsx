@@ -22,11 +22,8 @@ function App() {
             <Route path="/profile" element={<MyProfile />} />
             <Route path="/login" element={<Login />} /> {/* If login page is needed */}
             <Route path="/landing" element={<LandingPage />} /> {/* If landing page is needed */}
-            <Route path="/admin" element={<Admin />} /> 
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/manage-incidents" element={<ManageIncidents />} />
             <Route path="/contact" element={<ContactForm />} />
-            <Route path="/settings" element={<Settings />} /> 
             {/* <Route path="/footer" element={<Footer />} /> If footer is needed */}
           </Routes>
           <Footer />
