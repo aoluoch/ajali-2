@@ -80,8 +80,8 @@ function Manageincidents() {
                   className="border p-1 rounded"
                 >
                   <option value="under investigation">Under Investigation</option>
-                  <option value="reject">Rejected</option>
-                  <option value="resolve">Resolved</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="resolved">Resolved</option>
                 </select>
               </div>
 
