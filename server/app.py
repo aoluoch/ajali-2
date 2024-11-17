@@ -13,7 +13,8 @@ from datetime import timedelta
 
 # Create Flask app and API
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:5173"])  # Allow only React app to send requests
+
 api = Api(app)
 
 # Load configuration settings
