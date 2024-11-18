@@ -6,24 +6,22 @@ import Layout from './components/Layout';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Footer from "./components/Footer";
-import {
-  Admin,
-  ContactPage,
-  CreateIncident,
-  HomePage,
-  LandingPage,
-  Login,
-  ManageIncidents,
-  MyProfile,
-  Notifications,
-  Settings
-} from './pages';
+import Admin from './components/Admin';
+import ContactPage from './pages/ContactPage';
+import CreateIncident from './pages/CreateIncident';
+import HomePage from './pages/HomePage';
+import LandingPage from './pages/LandingPage';
+import Login from './pages/Login';
+import ManageIncidents from './pages/ManageIncidents';
+import MyProfile from './pages/MyProfile';
+import Notifications from './pages/Notifications';
+import Settings from './pages/Settings';
 
 const AppLayout = () => {
   const location = useLocation();
   
   // Define paths where Header and Sidebar should appear
-  const showHeaderSidebar = ['/home', '/create-incident', '/profile', '/notifications', '/manage-incidents', '/settings'].includes(location.pathname);
+  const showHeaderSidebar = ['/create-incident', '/profile', '/notifications', '/manage-incidents', '/settings'].includes(location.pathname);
 
   return (
     <Layout>
