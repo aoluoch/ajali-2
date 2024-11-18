@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import CreateIncident from "./pages/CreateIncident";
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
+/*import Sidebar from './components/Sidebar';*/
+/*import Header from './components/Header';*/
+import Footer from "./components/Footer";
 import MyProfile from "./pages/MyProfile";
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
-import Footer from "./components/Footer";
 import Admin from './components/Admin';
 import ContactForm from './pages/ContactPage'; // Import the ContactPage component
 import Settings from './pages/Settings'; // Import the Settings component
@@ -19,9 +19,9 @@ function App() {
   return (
     <Router>
       <div className="flex flex-col h-screen">
-        <Header />
+        {/*<Header />*/}
         <div className="flex flex-1">
-          <Sidebar />
+         { /* <Sidebar /> */}
           <div className="flex-1 overflow-auto p-4">
             <Routes>
               <Route path="/" element={<HomePage />} />
