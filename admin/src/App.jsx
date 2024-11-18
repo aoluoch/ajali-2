@@ -15,7 +15,7 @@ const App = () => {
       <div className="App">
         {/* Define routes here */}
         <Routes>
-            <Route path="/" element={<Admin />} /> 
+            <Route path="/admin" element={<Admin />} /> 
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/manage-incidents" element={<ManageIncidents />} />
             <Route path="/settings" element={<Settings />} /> 

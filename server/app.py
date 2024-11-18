@@ -13,7 +13,7 @@ from datetime import timedelta
 
 # Create Flask app and API
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+CORS(app)
 api = Api(app)
 
 # Load configuration settings
@@ -112,7 +112,7 @@ class UserLogoutResource(Resource):
 
 # ---------------- Incident Resources ----------------
 class IncidentListResource(Resource):
-    @login_required
+    
     def get(self):
         incidents = IncidentReport.query.all()
         return jsonify([incident.to_dict() for incident in incidents])

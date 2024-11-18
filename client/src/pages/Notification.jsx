@@ -46,7 +46,7 @@ const Notifications = () => {
         <div className="text-center py-12">
           <Bell className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900">No notifications</h3>
-          <p className="mt-2 text-gray-500">You&apos;re all caught up!</p>
+          <p className="mt-2 text-gray-500">You're all caught up!</p>
         </div>
       ) : (
         <div className="space-y-4">
