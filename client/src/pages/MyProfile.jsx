@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, MapPin, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -29,7 +29,7 @@ const MyProfile = () => {
           type: 'success',
           message: 'Incident deleted successfully'
         });
-      } catch {
+      } catch (error) {
         addNotification({
           type: 'error',
           message: 'Failed to delete incident'
