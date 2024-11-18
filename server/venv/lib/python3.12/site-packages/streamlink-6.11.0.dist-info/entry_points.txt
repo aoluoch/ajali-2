@@ -1,0 +1,2 @@
+[console_scripts]
+streamlink = streamlink_cli.main:main
