@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Phone, Shield, Clock, ArrowRight } from 'lucide-react';
-import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
-import RecentIncidents from '../components/RecentIncidents';
+import Footer from './Footer';
+import Navbar from './Navbar';
+import RecentIncidents from './RecentIncidents';
 
 const LandingPage = () => {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      
+    <>
+    <Navbar />
+    <div className="flex flex-col min-h-screen">     
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -161,6 +161,7 @@ const LandingPage = () => {
 
       <Footer />
     </div>
+    </>
   );
 };
 
