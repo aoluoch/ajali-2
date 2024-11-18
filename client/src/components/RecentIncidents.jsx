@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { MapPin, Clock, AlertCircle } from 'lucide-react';
-import Button from './Button';
+import Button from './Button.jsx';
 
 const RecentIncidents = () => {
   // Mock data - in real app, fetch from API
