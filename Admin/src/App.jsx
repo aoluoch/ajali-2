@@ -7,6 +7,7 @@ import Admin from './components/Admin';
 import Settings from './components/Settings'; // Import the Settings component
 import Notifications from './components/Notifications';
 import ManageIncidents from './components/ManageIncidents';
+
 const App = () => {
   return (
     <Router>

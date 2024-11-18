@@ -71,6 +71,33 @@ function Manageincidents() {
                 <p>Status: {incident.status}</p>
               </Link>
 
+              {/* Media (Pictures or Video) */}
+              <div className="mt-2">
+                {incident.pictures && incident.pictures.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold">Pictures</h3>
+                    {incident.pictures.map((picture, index) => (
+                      <img
+                        key={index}
+                        src={picture}
+                        alt={`incident-${incident.id}-pic-${index}`}
+                        className="w-full h-auto mt-2"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {incident.video && (
+                  <div>
+                    <h3 className="font-semibold">Video</h3>
+                    <video controls className="w-full h-auto mt-2">
+                      <source src={incident.video} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                )}
+              </div>
+
               {/* Status Update Dropdown */}
               <div className="mt-2">
                 <label className="mr-2">Change Status:</label>
@@ -80,8 +107,8 @@ function Manageincidents() {
                   className="border p-1 rounded"
                 >
                   <option value="under investigation">Under Investigation</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="resolved">Resolved</option>
+                  <option value="rejected">Reject</option>
+                  <option value="resolved">Resolve</option>
                 </select>
               </div>
 
