@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import emailjs from "@emailjs/browser";
 
 const ContactForm = () => {
@@ -37,7 +37,7 @@ const ContactForm = () => {
         <h3 className="text-left text-4xl pb-6 font-bold text-gray-800">Contact Us</h3>
         {formError && <p className="text-red-600 text-lg">{errorMessage}</p>}
         {formSubmitted ? (
-          <p className="text-green-500 text-lg">Thank you for your message! We'll get back to you shortly!</p>
+          <p className="text-green-500 text-lg">Thank you for your message! We&apos;ll get back to you shortly!</p>
         ) : (
           <form ref={form} onSubmit={sendEmail}>
             <div className="mb-4">
