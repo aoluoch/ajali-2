@@ -7,6 +7,7 @@ import Admin from './components/Admin';
 import Settings from './components/Settings'; // Import the Settings component
 import Notifications from './components/Notifications';
 import ManageIncidents from './components/ManageIncidents';
+import Login from './components/Login';
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/manage-incidents" element={<ManageIncidents />} />
             <Route path="/settings" element={<Settings />} /> 
+            <Route path="/login" element={<Login />} />
             {/* <Route path="/footer" element={<Footer />} /> If footer is needed */}
   
         </Routes>
