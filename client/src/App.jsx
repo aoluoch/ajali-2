@@ -1,12 +1,10 @@
-import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux'; // Import the Provider from react-redux
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import Footer from "./components/Footer";
-import Admin from './components/Admin';
+import store from './store/store'
 import ContactPage from './pages/ContactPage';
 import CreateIncident from './pages/CreateIncident';
 import HomePage from './pages/HomePage';
@@ -16,58 +14,67 @@ import ManageIncidents from './pages/ManageIncidents';
 import MyProfile from './pages/MyProfile';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
-
-const AppLayout = () => {
-  const location = useLocation();
   
-  // Define paths where Header and Sidebar should appear
-  const showHeaderSidebar = ['/create-incident', '/profile', '/notifications', '/manage-incidents', '/settings'].includes(location.pathname);
-
-  return (
-    <Layout>
-      <div className="flex flex-col min-h-screen">
-        {showHeaderSidebar && <Header />}
-        <div className="flex flex-1">
-          {showHeaderSidebar && <Sidebar />}
-          <div className={`flex-1 overflow-auto ${showHeaderSidebar ? 'p-4' : 'p-0'}`}>
-            <Routes>
-              {/* Landing page as default route */}
-              <Route path="/" element={<LandingPage />} />
-              
-              {/* Protected routes with header and sidebar */}
-              <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-              <Route path="/create-incident" element={<ProtectedRoute><CreateIncident /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-              <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-              <Route path="/manage-incidents" element={<ProtectedRoute><ManageIncidents /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              
-              {/* Public routes without header and sidebar */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-              <Route path="/contact" element={<ContactPage />} />
-
-              {/* Redirect all unknown routes to landing page */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-            {/* Only show footer on pages without header and sidebar */}
-            {!showHeaderSidebar && <Footer />}
-          </div>
-        </div>
-      </div>
-    </Layout>
-  );
-};
-
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <NotificationProvider>
-          <AppLayout />
-        </NotificationProvider>
-      </AuthProvider>
-    </Router>
+    <Provider store={store}> {/* Wrap your app with the Provider */}
+      <Router>
+        <AuthProvider>
+          <NotificationProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/contact" element={<ContactPage />} />
+
+              {/* Protected routes */}
+              <Route path="/home" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <HomePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/create-incident" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateIncident />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <MyProfile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Notifications />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/manage-incidents" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ManageIncidents />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </NotificationProvider>
+        </AuthProvider>
+      </Router>
+    </Provider>
   );
 }
 
