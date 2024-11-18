@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, MapPin, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useIncidents } from '../hooks/useIncidents';
 import { useNotifications } from '../context/NotificationContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const MyProfile = () => {
   const { user } = useAuth();
@@ -12,9 +13,18 @@ const MyProfile = () => {
   const navigate = useNavigate();
   const { addNotification } = useNotifications();
 
-  const userIncidents = incidents.filter(incident => incident.userId === user.id);
+  // If no user is found, show loading state
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  const userIncidents = incidents?.filter(incident => incident?.userId === user?.id) || [];
   const filteredIncidents = userIncidents.filter(incident => 
-    filter === 'all' || incident.status.toLowerCase() === filter
+    filter === 'all' || incident?.status?.toLowerCase() === filter
   );
 
   const handleEdit = (incident) => {
@@ -29,7 +39,7 @@ const MyProfile = () => {
           type: 'success',
           message: 'Incident deleted successfully'
         });
-      } catch (error) {
+      } catch {
         addNotification({
           type: 'error',
           message: 'Failed to delete incident'
@@ -39,7 +49,7 @@ const MyProfile = () => {
   };
 
   const getStatusIcon = (status) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'resolved':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'under investigation':
@@ -52,7 +62,7 @@ const MyProfile = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -71,12 +81,12 @@ const MyProfile = () => {
       <div className="mb-8 text-center">
         <div className="relative inline-block">
           <img
-            src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.username}&background=random`}
+            src={user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}&background=random`}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
           />
         </div>
-        <h1 className="mt-4 text-3xl font-bold text-gray-900">{user.username}</h1>
+        <h1 className="mt-4 text-3xl font-bold text-gray-900">{user.username || 'User'}</h1>
         <p className="text-gray-600">{user.email}</p>
       </div>
 
@@ -148,14 +158,14 @@ const MyProfile = () => {
                     className="flex items-center space-x-1 px-3 py-1 text-blue-600 hover:bg-blue-50 rounded"
                   >
                     <Edit2 className="h-4 w-4" />
-                    <span>Edit</span>
+                    <span className="hidden sm:inline">Edit</span>
                   </button>
                   <button
                     onClick={() => handleDelete(incident.id)}
                     className="flex items-center space-x-1 px-3 py-1 text-red-600 hover:bg-red-50 rounded"
                   >
                     <Trash2 className="h-4 w-4" />
-                    <span>Delete</span>
+                    <span className="hidden sm:inline">Delete</span>
                   </button>
                 </div>
               </div>
