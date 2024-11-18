@@ -7,7 +7,7 @@ import { loginUser, registerUser } from '../store/slices/authSlice';
 import Button from '../components/Button';
 
 const Login = () => {
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
