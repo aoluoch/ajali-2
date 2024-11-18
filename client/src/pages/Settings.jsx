@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { Bell, Lock, User, Globe, Shield, Database } from 'lucide-react';
 
 const Settings = () => {
-  // State management for toggling sections
-  const [isGeneralOpen, setGeneralOpen] = useState(true);
-  const [isSecurityOpen, setSecurityOpen] = useState(false);
-  const [isApiOpen, setApiOpen] = useState(false);
-  const [isLogsOpen, setLogsOpen] = useState(false);
-  const [isMaintenanceOpen, setMaintenanceOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Example form state for settings
-  const [formData, setFormData] = useState({
-    appName: '',
-    passwordPolicy: '',
-    enable2FA: false,
-    timezone: 'UTC',
-    apiKey: '',
-    notificationEmail: '',
-    enableCache: true,
-    backupSchedule: 'Weekly',
+  // Sample user data, replace with actual dynamic data if needed
+  const user = {
+    username: 'JohnDoe',
+    email: 'john.doe@example.com',
+    profilePicture: 'https://ui-avatars.com/api/?name=JohnDoe&background=random',
+  };
+
+  const [settings, setSettings] = useState({
+    notifications: {
+      email: true,
+      push: true,
+      sms: false
+    },
+    privacy: {
+      profileVisibility: 'public',
+      locationSharing: true
+    },
+    account: {
+      twoFactorAuth: false,
+      language: 'en',
+      passwordProtection: false,
+      dataBackup: false
+    }
   });
 
   const handleInputChange = (e) => {
@@ -28,25 +37,26 @@ const Settings = () => {
     }));
   };
 
-  const handleToggle = (section) => {
-    switch (section) {
-      case 'general':
-        setGeneralOpen(!isGeneralOpen);
-        break;
-      case 'security':
-        setSecurityOpen(!isSecurityOpen);
-        break;
-      case 'api':
-        setApiOpen(!isApiOpen);
-        break;
-      case 'logs':
-        setLogsOpen(!isLogsOpen);
-        break;
-      case 'maintenance':
-        setMaintenanceOpen(!isMaintenanceOpen);
-        break;
-      default:
-        break;
+  const handleSelect = (category, setting, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [setting]: value
+      }
+    }));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert('Settings updated successfully');
+    } catch {
+      alert('Failed to update settings');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,18 +64,32 @@ const Settings = () => {
     <div className="settings-container p-6">
       <h1 className="text-3xl font-bold mb-4">Admin Settings</h1>
 
-      {/* General Settings */}
-      <div className="mb-6">
-        <button
-          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
-          onClick={() => handleToggle('general')}
-        >
-          General Settings
-        </button>
-        {isGeneralOpen && (
-          <div className="bg-gray-100 p-4 rounded-md space-y-4">
-            <div>
-              <label className="block">Application Name:</label>
+      {/* Profile Section */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex items-center space-x-4 mb-6">
+          <img
+            src={user.profilePicture}
+            alt="Profile"
+            className="w-16 h-16 rounded-full"
+          />
+          <div>
+            <h2 className="text-lg font-semibold">{user.username}</h2>
+            <p className="text-gray-600">{user.email}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Notification Settings */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <Bell className="h-5 w-5 text-gray-500" />
+          <h2 className="text-lg font-semibold">Notification Settings</h2>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span>Email Notifications</span>
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="text"
                 name="appName"
@@ -171,22 +195,25 @@ const Settings = () => {
         )}
       </div>
 
-      {/* Logs */}
-      <div className="mb-6">
-        <button
-          className="w-full text-left bg-gray-200 p-3 rounded-md mb-2"
-          onClick={() => handleToggle('logs')}
-        >
-          Logs
-        </button>
-        {isLogsOpen && (
-          <div className="bg-gray-100 p-4 rounded-md space-y-4">
-            <div>
-              <p className="text-gray-500">View recent activity logs</p>
-            </div>
-            <div>
-              <p className="text-gray-500">View error logs</p>
-            </div>
+      {/* Data Management */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <Database className="h-5 w-5 text-gray-500" />
+          <h2 className="text-lg font-semibold">Data Management</h2>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span>Data Backup</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.account.dataBackup}
+                onChange={() => handleToggle('account', 'dataBackup')}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+            </label>
           </div>
         )}
       </div>

@@ -1,29 +1,51 @@
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchIncidents } from '../store/slices/incidentSlice';
+import { useEffect, useState } from 'react';
 import { Search, Filter, MapPin } from 'lucide-react';
 import IncidentCard from '../components/IncidentCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import SearchBar from '../components/SearchBar';
 import Button from '../components/Button';
-import { useState } from 'react';
 
 const HomePage = () => {
-  const dispatch = useDispatch();
-  const { incidents, loading, error } = useSelector(state => state.incidents);
+  const [incidents, setIncidents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState("grid");
-  
+
+  // Simulate fetching data
   useEffect(() => {
-    dispatch(fetchIncidents());
-  }, [dispatch]);
+    const fetchIncidents = async () => {
+      try {
+        // Simulating an API call
+        const response = await new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve([
+                { id: '1', title: 'Incident 1', description: 'Description 1', status: 'Under Investigation' },
+                { id: '2', title: 'Incident 2', description: 'Description 2', status: 'Resolved' },
+                { id: '3', title: 'Incident 3', description: 'Description 3', status: 'Rejected' },
+              ]),
+            1000
+          )
+        );
+        setIncidents(response);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch incidents');
+        setLoading(false);
+      }
+    };
+
+    fetchIncidents();
+  }, []);
 
   const filteredIncidents = incidents.filter((incident) => {
     const matchesStatus = filter === "All" || incident.status === filter;
-    const matchesSearch = incident.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         incident.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      incident.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      incident.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -45,7 +67,7 @@ const HomePage = () => {
           placeholder="Search incidents..."
           className="flex-1 max-w-lg"
         >
-        <Search className="text-gray-400" />
+          <Search className="text-gray-400" />
         </SearchBar>
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
@@ -61,7 +83,7 @@ const HomePage = () => {
               <option value="Rejected">Rejected</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-2 border rounded-lg overflow-hidden">
             <Button
               onClick={() => setView("grid")}

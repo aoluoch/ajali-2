@@ -88,10 +88,10 @@ class UserLoginResource(Resource):
         data = request.get_json()
 
         # Validate required fields
-        if not data.get('username') or not data.get('password'):
+        if not data.get('email') or not data.get('password'):
             return {'message': 'Username and password are required'}, 400
 
-        user = User.query.filter_by(username=data['username']).first()
+        user = User.query.filter_by(email=data['email']).first()
 
         if user and check_password_hash(user.password_hash, data['password']):
             # Set session

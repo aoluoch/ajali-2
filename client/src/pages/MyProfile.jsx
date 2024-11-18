@@ -1,50 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, MapPin, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useIncidents } from '../hooks/useIncidents';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const MyProfile = () => {
-  const { user } = useAuth();
-  const { incidents, loading, error, deleteIncident } = useIncidents();
+  const [user, setUser] = useState(null);
+  const [incidents, setIncidents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
-  const { addNotification } = useNotifications();
 
-  // If no user is found, show loading state
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  const userIncidents = incidents?.filter(incident => incident?.userId === user?.id) || [];
-  const filteredIncidents = userIncidents.filter(incident => 
-    filter === 'all' || incident?.status?.toLowerCase() === filter
-  );
+  // Mock user data (replace with real authentication logic)
+  useEffect(() => {
+    setTimeout(() => {
+      setUser({
+        id: 1,
+        username: 'JohnDoe',
+        email: 'john@example.com',
+        profilePicture: '', // Add your picture URL here
+      });
+      // Mock incidents data
+      setIncidents([
+        { id: 1, userId: 1, title: 'Issue with login', status: 'under investigation', description: 'Unable to log in to the system.' },
+        { id: 2, userId: 1, title: 'Server downtime', status: 'resolved', description: 'The server was down for 2 hours.' },
+        { id: 3, userId: 1, title: 'Payment failure', status: 'under investigation', description: 'Payment gateway not responding.' },
+      ]);
+      setLoading(false);
+    }, 1000); // Simulate loading time
+  }, []);
 
   const handleEdit = (incident) => {
     navigate('/create-incident', { state: { incident } });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this incident?')) {
-      try {
-        await deleteIncident(id);
-        addNotification({
-          type: 'success',
-          message: 'Incident deleted successfully'
-        });
-      } catch {
-        addNotification({
-          type: 'error',
-          message: 'Failed to delete incident'
-        });
-      }
+      setIncidents((prevIncidents) => prevIncidents.filter((incident) => incident.id !== id));
+      alert('Incident deleted successfully');
     }
   };
 
@@ -74,6 +67,11 @@ const MyProfile = () => {
       </div>
     );
   }
+
+  // Filter incidents based on status
+  const filteredIncidents = incidents.filter((incident) => 
+    filter === 'all' || incident.status.toLowerCase() === filter
+  );
 
   return (
     <div className="p-6">
