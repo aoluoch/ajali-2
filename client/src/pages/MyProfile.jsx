@@ -16,7 +16,7 @@ const MyProfile = () => {
     setTimeout(() => {
       setUser({
         id: 1,
-        username: 'JohnDoe',
+        username: '',
         email: 'john@example.com',
         profilePicture: '', // Add your picture URL here
       });
