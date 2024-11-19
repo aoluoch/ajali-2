@@ -1,17 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit2, Trash2, MapPin, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useIncidents } from '../hooks/useIncidents';
-import { useNotifications } from '../context/NotificationContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const MyProfile = () => {
-  const { user } = useAuth();
-  const { incidents, loading, error, deleteIncident } = useIncidents();
+  const [user, setUser] = useState(null);
+  const [incidents, setIncidents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
-  const { addNotification } = useNotifications();
+
+  useEffect(() => {
+    // Fetch user data
+    fetchUser().then(setUser).catch(setError).finally(() => setLoading(false));
+    // Fetch incidents data
+    fetchIncidents().then(setIncidents).catch(setError);
+  }, []);
+
+  const fetchUser = async () => {
+    // Replace with actual API call
+    return { id: 1, username: 'User', email: 'user@example.com', profilePicture: null };
+  };
+
+  const fetchIncidents = async () => {
+    // Replace with actual API call
+    return [
+      { id: 1, userId: 1, title: 'Incident 1', description: 'Description 1', status: 'resolved' },
+      { id: 2, userId: 1, title: 'Incident 2', description: 'Description 2', status: 'under investigation' }
+    ];
+  };
+
+  const deleteIncident = async (id) => {
+    // Replace with actual API call
+    setIncidents(incidents.filter(incident => incident.id !== id));
+  };
 
   // If no user is found, show loading state
   if (!user) {
@@ -22,9 +45,9 @@ const MyProfile = () => {
     );
   }
 
-  const userIncidents = incidents?.filter(incident => incident?.userId === user?.id) || [];
+  const userIncidents = incidents.filter(incident => incident.userId === user.id);
   const filteredIncidents = userIncidents.filter(incident => 
-    filter === 'all' || incident?.status?.toLowerCase() === filter
+    filter === 'all' || incident.status.toLowerCase() === filter
   );
 
   const handleEdit = (incident) => {
@@ -35,21 +58,15 @@ const MyProfile = () => {
     if (window.confirm('Are you sure you want to delete this incident?')) {
       try {
         await deleteIncident(id);
-        addNotification({
-          type: 'success',
-          message: 'Incident deleted successfully'
-        });
+        alert('Incident deleted successfully');
       } catch {
-        addNotification({
-          type: 'error',
-          message: 'Failed to delete incident'
-        });
+        alert('Failed to delete incident');
       }
     }
   };
 
   const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'resolved':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'under investigation':

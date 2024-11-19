@@ -6,7 +6,7 @@ const Sidebar = () => {
       <ul className="space-y-4">
         <li>
           <NavLink 
-            to="/" 
+            to="/home" 
             className={({ isActive }) => 
               isActive
                 ? 'block py-2 px-4 bg-white text-red-600 rounded-md'  

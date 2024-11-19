@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Mail, Lock, LogIn, UserCircle, ArrowLeft } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, registerUser } from '../store/slices/authSlice';
 import Button from '../components/Button';
 
 const Login = () => {
@@ -11,30 +9,74 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);  // Local loading state
+  const [error, setError] = useState(null);  // Local error state
   
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector(state => state.auth);
+
+  // Function to handle API call for registration
+  const handleRegister = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Assuming registration was successful, navigate to login page
+      setIsRegistering(false);
+      navigate('/login');
+    } catch (error) {
+      setError(error.message || 'An error occurred during registration');
+    }
+  };
+
+  // Function to handle API call for login
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Assuming login was successful, store the token or session data
+      localStorage.setItem('authToken', data.token);  // Store token in localStorage (or sessionStorage)
+
+      // Navigate to the profile page after login
+      navigate('/profile');
+    } catch (error) {
+      setError(error.message || 'An error occurred during login');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    try {
-      if (isRegistering) {
-        const resultAction = await dispatch(registerUser({ username, email, password }));
-        if (registerUser.fulfilled.match(resultAction)) {
-          setIsRegistering(false);
-        }
-      } else {
-        const resultAction = await dispatch(loginUser({ username, password }));
-        if (loginUser.fulfilled.match(resultAction)) {
-          // Navigate to the profile page after successful login
-          navigate('/profile');
-        }
-      }
-    } catch (error) {
-      console.error('Authentication failed:', error);
+    setLoading(true);  // Start loading
+
+    if (isRegistering) {
+      await handleRegister();
+    } else {
+      await handleLogin();
     }
+
+    setLoading(false);  // Stop loading
   };
 
   return (
