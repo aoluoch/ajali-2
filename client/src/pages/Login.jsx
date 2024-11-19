@@ -171,54 +171,75 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
+  const [loading, setLoading] = useState(false);  // Local loading state
+  const [error, setError] = useState(null);  // Local error state
+  
   const navigate = useNavigate();
+
+  // Function to handle API call for registration
+  const handleRegister = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Assuming registration was successful, navigate to login page
+      setIsRegistering(false);
+      navigate('/login');
+    } catch (error) {
+      setError(error.message || 'An error occurred during registration');
+    }
+  };
+
+  // Function to handle API call for login
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Assuming login was successful, store the token or session data
+      localStorage.setItem('authToken', data.token);  // Store token in localStorage (or sessionStorage)
+
+      // Navigate to the profile page after login
+      navigate('/profile');
+    } catch (error) {
+      setError(error.message || 'An error occurred during login');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    setLoading(true);
-    setError('');
-  
-    try {
-      if (isRegistering) {
-        // Real registration API call
-        const response = await axios.post('http://localhost:5000/users', {
-          username,
-          email,
-          password,
-        });
-        console.log('User registered:', response.data);
-        setLoading(false);
-        setIsRegistering(false);
-      } else {
-        // Real login API call
-        const response = await axios.post('http://localhost:5000/login', {
-          email,
-          password,
-        });
-  
-        // Check for different status codes and handle them
-        if (response.status === 200) {
-          console.log('User logged in:', response.data);
-          navigate('/profile');
-        } else {
-          // Log the response data for further inspection
-          console.error('Login failed:', response);
-          setError('Invalid email or password');
-          setLoading(false);
-        }
-      }
-    } catch (error) {
-      // Log the error details to see the exact issue
-      console.error('Authentication failed:', error);
-      setError('An error occurred. Please try again later.');
-      setLoading(false);
+    setLoading(true);  // Start loading
+
+    if (isRegistering) {
+      await handleRegister();
+    } else {
+      await handleLogin();
     }
+
+    setLoading(false);  // Stop loading
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

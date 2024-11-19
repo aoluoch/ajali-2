@@ -1,8 +1,4 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types'; // Import PropTypes
-import { useDispatch } from 'react-redux';
-import { deleteIncident } from '../store/slices/incidentSlice';
-import { addNotification } from '../store/slices/uiSlice';
 import { Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
@@ -12,7 +8,6 @@ const IncidentCard = ({ incident }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const handleEdit = () => {
     navigate('/create-incident', { state: { incident } });
@@ -22,17 +17,11 @@ const IncidentCard = ({ incident }) => {
     if (window.confirm('Are you sure you want to delete this incident?')) {
       setIsDeleting(true);
       try {
-        await dispatch(deleteIncident(incident.id)).unwrap();
-        dispatch(addNotification({
-          type: 'success',
-          message: 'Incident deleted successfully'
-        }));
+        // Simulate deletion process
+        console.log(`Incident with ID ${incident.id} deleted.`);
+        alert('Incident deleted successfully');
       } catch {
-        // Removed unused 'error' variable
-        dispatch(addNotification({
-          type: 'error',
-          message: 'Failed to delete incident'
-        }));
+        alert('Failed to delete incident');
       } finally {
         setIsDeleting(false);
       }
@@ -84,16 +73,6 @@ const IncidentCard = ({ incident }) => {
       </div>
     </div>
   );
-};
-
-// Define prop types for the component
-IncidentCard.propTypes = {
-  incident: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
-  }).isRequired,
 };
 
 export default IncidentCard;

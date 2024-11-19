@@ -13,7 +13,7 @@ from datetime import timedelta
 
 # Create Flask app and API
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins="http://localhost:5173")
+CORS(app)
 api = Api(app)
 
 # Load configuration settings
@@ -88,10 +88,10 @@ class UserLoginResource(Resource):
         data = request.get_json()
 
         # Validate required fields
-        if not data.get('username') or not data.get('password'):
+        if not data.get('email') or not data.get('password'):
             return {'message': 'Username and password are required'}, 400
 
-        user = User.query.filter_by(username=data['username']).first()
+        user = User.query.filter_by(email=data['email']).first()
 
         if user and check_password_hash(user.password_hash, data['password']):
             # Set session
