@@ -11,38 +11,62 @@ const MyProfile = () => {
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
-  // Mock user data (replace with real authentication logic)
   useEffect(() => {
-    setTimeout(() => {
-      setUser({
-        id: 1,
-        username: 'JohnDoe',
-        email: 'john@example.com',
-        profilePicture: '', // Add your picture URL here
-      });
-      // Mock incidents data
-      setIncidents([
-        { id: 1, userId: 1, title: 'Issue with login', status: 'under investigation', description: 'Unable to log in to the system.' },
-        { id: 2, userId: 1, title: 'Server downtime', status: 'resolved', description: 'The server was down for 2 hours.' },
-        { id: 3, userId: 1, title: 'Payment failure', status: 'under investigation', description: 'Payment gateway not responding.' },
-      ]);
-      setLoading(false);
-    }, 1000); // Simulate loading time
+    // Fetch user data
+    fetchUser().then(setUser).catch(setError).finally(() => setLoading(false));
+    // Fetch incidents data
+    fetchIncidents().then(setIncidents).catch(setError);
   }, []);
+
+  const fetchUser = async () => {
+    // Replace with actual API call
+    return { id: 1, username: 'User', email: 'user@example.com', profilePicture: null };
+  };
+
+  const fetchIncidents = async () => {
+    // Replace with actual API call
+    return [
+      { id: 1, userId: 1, title: 'Incident 1', description: 'Description 1', status: 'resolved' },
+      { id: 2, userId: 1, title: 'Incident 2', description: 'Description 2', status: 'under investigation' }
+    ];
+  };
+
+  const deleteIncident = async (id) => {
+    // Replace with actual API call
+    setIncidents(incidents.filter(incident => incident.id !== id));
+  };
+
+  // If no user is found, show loading state
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  const userIncidents = incidents.filter(incident => incident.userId === user.id);
+  const filteredIncidents = userIncidents.filter(incident => 
+    filter === 'all' || incident.status.toLowerCase() === filter
+  );
 
   const handleEdit = (incident) => {
     navigate('/create-incident', { state: { incident } });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this incident?')) {
-      setIncidents((prevIncidents) => prevIncidents.filter((incident) => incident.id !== id));
-      alert('Incident deleted successfully');
+      try {
+        await deleteIncident(id);
+        alert('Incident deleted successfully');
+      } catch {
+        alert('Failed to delete incident');
+      }
     }
   };
 
   const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
+    switch (status.toLowerCase()) {
       case 'resolved':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'under investigation':
@@ -67,11 +91,6 @@ const MyProfile = () => {
       </div>
     );
   }
-
-  // Filter incidents based on status
-  const filteredIncidents = incidents.filter((incident) => 
-    filter === 'all' || incident.status.toLowerCase() === filter
-  );
 
   return (
     <div className="p-6">
