@@ -32,7 +32,7 @@ const HomePage = () => {
         );
         setIncidents(response);
         setLoading(false);
-      } catch {
+      } catch (err) {
         setError('Failed to fetch incidents');
         setLoading(false);
       }
