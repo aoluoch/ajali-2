@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaBell, FaCog } from 'react-icons/fa'; // Importing icons from react-icons
+import Navbar from './Navbar';
 
 const Admin = () => {
     return (
@@ -25,35 +26,7 @@ const Admin = () => {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col">
-                {/* Top Navbar */}
-                <div className="flex items-center justify-between bg-red-600 text-white shadow-md p-6 border-b border-black">
-                    <div className="flex items-center space-x-6">
-                        {/* Login link at the far left of the navbar */}
-                        <Link to="/login" className="text-white text-lg">Login</Link>
-                    </div>
-                    <div className="flex items-center space-x-6">
-                        <div className="flex items-center">
-                            <Link to="/" className="text-xl font-bold">Ajali!</Link>
-                        </div>
-                        <div className="flex items-center space-x-6">
-                            {/* Removed Incident Reports link */}
-                            <div className="relative cursor-pointer">
-                                <FaBell className="text-white" />
-                                <span className="absolute -top-1 -right-2 bg-black text-white text-xs rounded-full px-1">2</span>
-                            </div>
-                            <FaCog className="cursor-pointer text-white" />
-                            <Link to="/logout" className="hover:text-gray-300">Logout</Link>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Main Content Area */}
-                <div className="flex-1 p-6">
-                    <h1 className="text-3xl font-semibold text-black">Welcome to the Admin Dashboard!</h1>
-                    {/* Add your routing logic here to display different components */}
-                </div>
-            </div>
+           <Navbar></Navbar>.
         </div>
     );
 };

@@ -6,7 +6,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Admin from './components/Admin';
 import Settings from './components/Settings'; // Import the Settings component
 import Notifications from './components/Notifications';
-import ManageIncidents from './components/ManageIncidents';
+import Incidents from "./components/Incidents";
+import Manageincidents from "./components/ManageIncidents";
 
 const App = () => {
   return (
@@ -16,8 +17,10 @@ const App = () => {
         <Routes>
             <Route path="/" element={<Admin />} /> 
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/manage-incidents" element={<ManageIncidents />} />
+            <Route path="/manage-incidents" element={<Manageincidents />} />
             <Route path="/settings" element={<Settings />} /> 
+            <Route path="/incidents" element={<Incidents />} /> 
+
             {/* <Route path="/footer" element={<Footer />} /> If footer is needed */}
   
         </Routes>

@@ -1,12 +1,20 @@
 import { useState } from 'react';
 import { Bell, Check, Trash2 } from 'lucide-react';
-import { useNotifications } from '../context/NotificationContext';
 
 const Notifications = () => {
-  const { notifications, removeNotification } = useNotifications();
+  // Sample static notifications data, replace this with dynamic data as needed
+  const [notifications, setNotifications] = useState([
+    { id: '1', type: 'success', message: 'Your profile has been updated successfully.' },
+    { id: '2', type: 'error', message: 'Failed to update your password.' },
+    { id: '3', type: 'success', message: 'You have a new message.' },
+  ]);
   const [filter, setFilter] = useState('all');
 
-  const filteredNotifications = notifications.filter(notification => 
+  const removeNotification = (id) => {
+    setNotifications(prevNotifications => prevNotifications.filter(notification => notification.id !== id));
+  };
+
+  const filteredNotifications = notifications.filter(notification =>
     filter === 'all' || notification.type === filter
   );
 

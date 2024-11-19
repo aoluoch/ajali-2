@@ -1,31 +1,29 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+import DashboardContent from './components/DashboardContent';
+import Settings from './components/ettings';
 
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-// Import your components
-import Admin from './components/Admin';
-import Settings from './components/Settings'; // Import the Settings component
-import Notifications from './components/Notifications';
-import ManageIncidents from './components/ManageIncidents';
-import Login from './components/Login';
-
-const App = () => {
+function App() {
   return (
     <Router>
-      <div className="App">
-        {/* Define routes here */}
-        <Routes>
-            <Route path="/" element={<Admin />} /> 
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/manage-incidents" element={<ManageIncidents />} />
-            <Route path="/settings" element={<Settings />} /> 
-            <Route path="/login" element={<Login />} />
-            {/* <Route path="/footer" element={<Footer />} /> If footer is needed */}
-  
-        </Routes>
+      <div className="flex h-screen bg-gray-100">
+        {/* Sidebar */}
+        <Sidebar />
+
+        {/* Main content */}
+        <div className="flex-1 p-6">
+          <Routes>
+            {/* Dashboard Route */}
+            <Route path="/dashboard" element={<DashboardContent />} />
+            
+            {/* Settings Route */}
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
-};
+}
 
 export default App;

@@ -1,24 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import Navbar from './Navbar';
 
 function Manageincidents() {
   const [incidents, setIncidents] = useState([]);
+  const [media, setMedia] = useState({ images: {}, videos: {} });
   const [loading, setLoading] = useState(true);
-
+  const [change,setchange] = useState("resolved")
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/incidents')
-      .then((response) => response.json())
-      .then((data) => {
-        setIncidents(data);
+    const fetchData = async () => {
+      try {
+        // Fetch all incidents
+        const incidentsResponse = await axios.get('http://127.0.0.1:5000/incidents', {
+          withCredentials: true,
+        });
+        const fetchedIncidents = incidentsResponse.data;
+
+        // Fetch images and videos for each incident
+        const mediaPromises = fetchedIncidents.map(async (incident) => {
+          const imagesResponse = await axios.get(
+            `http://127.0.0.1:5000/incidents/${incident.id}/images`,
+            { withCredentials: true }
+          );
+          const videosResponse = await axios.get(
+            `http://127.0.0.1:5000/incidents/${incident.id}/videos`,
+            { withCredentials: true }
+          );
+
+          return {
+            id: incident.id,
+            images: imagesResponse.data,
+            videos: videosResponse.data,
+          };
+        });
+
+        const mediaResults = await Promise.all(mediaPromises);
+
+        const images = {};
+        const videos = {};
+
+        mediaResults.forEach((item) => {
+          images[item.id] = item.images;
+          videos[item.id] = item.videos;
+        });
+
+        setIncidents(fetchedIncidents);
+        setMedia({ images, videos });
+      } catch (err) {
+        console.error('Error fetching incidents and media:', err);
+      } finally {
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching incidents:', error);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleStatusChange = (id, newStatus) => {
+    // Update the status on the backend
     fetch(`http://127.0.0.1:5000/incidents/${id}`, {
       method: 'PUT',
       headers: {
@@ -28,7 +68,7 @@ function Manageincidents() {
     })
       .then((response) => response.json())
       .then((data) => {
-        // Update the status locally
+        // If the backend update is successful, update the status locally in the UI
         setIncidents((prevIncidents) =>
           prevIncidents.map((incident) =>
             incident.id === id ? { ...incident, status: newStatus } : incident
@@ -55,83 +95,89 @@ function Manageincidents() {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Incidents</h1>
+      <h1 className="text-2xl font-bold mb-4">Incident Management</h1>
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <ul className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {incidents.map((incident) => (
-            <li
+            <div
               key={incident.id}
-              className="p-4 bg-white shadow-md rounded-lg hover:bg-gray-100"
+              className="p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition duration-300 ease-in-out"
             >
-              <Link to={`/incident/${incident.id}`} className="text-blue-500">
-                <h2 className="text-lg font-semibold">{incident.description}</h2>
-                <p>Status: {incident.status}</p>
+              {/* Incident Title and Description */}
+              <Link to={`/incident/${incident.id}`} className="text-blue-600 font-semibold text-lg">
+                <h2>{incident.description}</h2>
               </Link>
+              <p className="text-gray-600 text-sm">{incident.created_at}</p>
 
-              {/* Media (Pictures or Video) */}
-              <div className="mt-2">
-                {incident.pictures && incident.pictures.length > 0 && (
+              {/* Media Section: Images and Videos */}
+              <div className="mt-4">
+                {media.images[incident.id] && media.images[incident.id].length > 0 && (
                   <div>
-                    <h3 className="font-semibold">Pictures</h3>
-                    {incident.pictures.map((picture, index) => (
-                      <img
-                        key={index}
-                        src={picture}
-                        alt={`incident-${incident.id}-pic-${index}`}
-                        className="w-full h-auto mt-2"
-                      />
-                    ))}
+                    <h3 className="text-lg font-semibold">Images</h3>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {media.images[incident.id].map((image, index) => (
+                        <img
+                          key={index}
+                          src={image.image_url}
+                          alt={`incident-${incident.id}-image-${index}`}
+                          className="w-full h-32 object-cover rounded-md"
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {incident.video && (
-                  <div>
-                    <h3 className="font-semibold">Video</h3>
-                    <video controls className="w-full h-auto mt-2">
-                      <source src={incident.video} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                {media.videos[incident.id] && media.videos[incident.id].length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-lg font-semibold">Videos</h3>
+                    <div className="space-y-2">
+                      {media.videos[incident.id].map((video, index) => (
+                        <div key={index}>
+                          <video controls className="w-full h-32 object-cover rounded-md">
+                            <source src={video.video_url} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Status Update Dropdown */}
-              <div className="mt-2">
-                <label className="mr-2">Change Status:</label>
+              <div className="mt-4">
+                <label className="block text-sm font-medium">Change Status:</label>
                 <select
                   value={incident.status}
-                  onChange={(e) => handleStatusChange(incident.id, e.target.value)}
-                  className="border p-1 rounded"
+                  onChange={(e) => (e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md mt-2"
                 >
                   <option value="under investigation">Under Investigation</option>
-                  <option value="rejected">Reject</option>
-                  <option value="resolved">Resolve</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="resolved">Resolved</option>
                 </select>
               </div>
 
-              {/* Edit and Delete Icons */}
-              <div className="mt-2 flex space-x-2">
-                <button
-                  onClick={() => handleStatusChange(incident.id, 'resolved')}
-                  className="text-green-500 hover:text-green-700"
-                >
-                  ✅ Resolve
-                </button>
+              {/* Action Buttons */}
+              <div className="flex justify-between items-center mt-4">
                 <button
                   onClick={() => handleDelete(incident.id)}
-                  className="text-red-500 hover:text-red-700"
+                  className="bg-red-500 text-white py-2 px-4 rounded-md text-sm hover:bg-red-600"
                 >
                   🗑️ Delete
                 </button>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-    </div>
+    </div> 
+    </>
   );
 }
 
