@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../context/NotificationContext';
 import { Bell, Lock, User, Globe, Shield, Database } from 'lucide-react';
 
 const Settings = () => {
-  const { user } = useAuth();
-  const { addNotification } = useNotifications();
   const [loading, setLoading] = useState(false);
+
+  // Sample user data, replace with actual dynamic data if needed
+  const user = {
+    username: 'JohnDoe',
+    email: 'john.doe@example.com',
+    profilePicture: 'https://ui-avatars.com/api/?name=JohnDoe&background=random',
+  };
 
   const [settings, setSettings] = useState({
     notifications: {
@@ -20,7 +23,9 @@ const Settings = () => {
     },
     account: {
       twoFactorAuth: false,
-      language: 'en'
+      language: 'en',
+      passwordProtection: false,
+      dataBackup: false
     }
   });
 
@@ -49,15 +54,9 @@ const Settings = () => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      addNotification({
-        type: 'success',
-        message: 'Settings updated successfully'
-      });
+      alert('Settings updated successfully');
     } catch {
-      addNotification({
-        type: 'error',
-        message: 'Failed to update settings'
-      });
+      alert('Failed to update settings');
     } finally {
       setLoading(false);
     }
@@ -71,13 +70,13 @@ const Settings = () => {
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div className="flex items-center space-x-4 mb-6">
           <img
-            src={user?.profilePicture || `https://ui-avatars.com/api/?name=${user?.username}&background=random`}
+            src={user.profilePicture}
             alt="Profile"
             className="w-16 h-16 rounded-full"
           />
           <div>
-            <h2 className="text-lg font-semibold">{user?.username}</h2>
-            <p className="text-gray-600">{user?.email}</p>
+            <h2 className="text-lg font-semibold">{user.username}</h2>
+            <p className="text-gray-600">{user.email}</p>
           </div>
         </div>
       </div>
@@ -222,29 +221,6 @@ const Settings = () => {
               />
               <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
             </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Language Settings */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div className="flex items-center space-x-2 mb-4">
-          <Globe className="h-5 w-5 text-gray-500" />
-          <h2 className="text-lg font-semibold">Language Settings</h2>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span>Preferred Language</span>
-            <select
-              value={settings.account.language}
-              onChange={(e) => handleSelect('account', 'language', e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1"
-            >
-              <option value="en">English</option>
-              <option value="sw">Swahili</option>
-              <option value="fr">French</option>
-            </select>
           </div>
         </div>
       </div>
