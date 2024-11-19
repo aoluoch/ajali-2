@@ -1,6 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const ManageIncidents = () => {
+    const [incidents, setIncidents] = useState([]); // State to store incidents
+    const [loading, setLoading] = useState(true); // State for loading indicator
+    const [error, setError] = useState(""); // State for error handling
+
+    // Fetch incidents from API when component mounts
+    useEffect(() => {
+        const fetchIncidents = async () => {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/incidents");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch incidents");
+                }
+                const data = await response.json();
+                setIncidents(data); // Update state with fetched incidents
+            } catch (err) {
+                setError(err.message); // Handle error
+            } finally {
+                setLoading(false); // Set loading to false after fetching
+            }
+        };
+
+        fetchIncidents();
+    }, []); // Empty dependency array means this effect runs only once after the first render
+
+    if (loading) {
+        return <div>Loading incidents...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-500">{error}</div>;
+    }
+
     return (
         <div className="p-6">
             <h2 className="text-2xl font-semibold">Manage Incidents</h2>
@@ -14,22 +46,24 @@ const ManageIncidents = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td className="border px-4 py-2">1</td>
-                        <td className="border px-4 py-2">Incident description 1</td>
-                        <td className="border px-4 py-2">Open</td>
-                        <td className="border px-4 py-2">
-                            <button className="text-blue-500">View</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td className="border px-4 py-2">2</td>
-                        <td className="border px-4 py-2">Incident description 2</td>
-                        <td className="border px-4 py-2">Resolved</td>
-                        <td className="border px-4 py-2">
-                            <button className="text-blue-500">View</button>
-                        </td>
-                    </tr>
+                    {incidents.length === 0 ? (
+                        <tr>
+                            <td colSpan="4" className="border px-4 py-2 text-center">
+                                No incidents available
+                            </td>
+                        </tr>
+                    ) : (
+                        incidents.map((incident) => (
+                            <tr key={incident.id}>
+                                <td className="border px-4 py-2">{incident.id}</td>
+                                <td className="border px-4 py-2">{incident.description}</td>
+                                <td className="border px-4 py-2">{incident.status}</td>
+                                <td className="border px-4 py-2">
+                                    <button className="text-blue-500">View</button>
+                                </td>
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
         </div>
