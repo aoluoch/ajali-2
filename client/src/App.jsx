@@ -10,9 +10,9 @@ import LandingPage from './components/LandingPage';
 import Login from './pages/Login';
 import ManageIncidents from './pages/ManageIncidents';
 import MyProfile from './pages/MyProfile';
-import Notifications from './pages/Notifications';
+import Notifications from './pages/Notification';
 import Settings from './pages/Settings';
-import Admin from './components/Admin'; 
+import Admin from './pages/Admin'; 
 
 function App() {
   return (
