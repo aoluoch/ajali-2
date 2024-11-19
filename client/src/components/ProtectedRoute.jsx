@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { checkAuthStatus } from '../store/slices/authSlice';
 import LoadingSpinner from './LoadingSpinner';
 import PropTypes from 'prop-types'; // Added import for PropTypes
 
