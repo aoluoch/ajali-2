@@ -58,6 +58,16 @@ const CreateIncident = () => {
     setMediaFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  const handleManualCoordinatesChange = (event) => {
+    const value = event.target.value;
+    setManualCoordinates(value);
+
+    const [lat, lng] = value.split(",").map(coord => parseFloat(coord.trim()));
+    if (!isNaN(lat) && !isNaN(lng)) {
+      setLocation([lat, lng]);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!mediaFiles.length) {
@@ -212,6 +222,19 @@ const CreateIncident = () => {
               </Marker>
             )}
           </MapContainer>
+          <div className="mt-4">
+            <label htmlFor="manualCoordinates" className="block text-lg font-medium text-gray-700">
+              Manual Coordinates
+            </label>
+            <input
+              type="text"
+              id="manualCoordinates"
+              value={manualCoordinates}
+              onChange={handleManualCoordinatesChange}
+              className="w-full p-3 border border-gray-300 rounded-md"
+              placeholder="Enter coordinates as latitude, longitude"
+            />
+          </div>
         </div>
 
         {/* Submit Button */}

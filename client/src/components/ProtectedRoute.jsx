@@ -1,17 +1,28 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { checkAuthStatus } from '../store/slices/authSlice';
+import PropTypes from 'prop-types';
 import LoadingSpinner from './LoadingSpinner';
-import PropTypes from 'prop-types'; // Added import for PropTypes
+import axios from 'axios';
 
 const ProtectedRoute = ({ children }) => {
-  const dispatch = useDispatch();
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    dispatch(checkAuthStatus());
-  }, [dispatch]);
+    const checkAuthStatus = async () => {
+      try {
+        const response = await axios.get('/api/auth/status'); // Adjust the endpoint as needed
+        setIsAuthenticated(response.data.isAuthenticated);
+      } catch (error) {
+        console.error('Auth status check failed:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -25,7 +36,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired, // Added propTypes validation
+  children: PropTypes.node.isRequired,
 };
 
 export default ProtectedRoute;
