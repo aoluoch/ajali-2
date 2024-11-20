@@ -1,0 +1,20 @@
+{
+    "settings": "Settings",
+    "notificationSettings": "Notification Settings",
+    "emailNotifications": "Email Notifications",
+    "pushNotifications": "Push Notifications",
+    "smsNotifications": "SMS Notifications",
+    "privacySettings": "Privacy Settings",
+    "profileVisibility": "Profile Visibility",
+    "locationSharing": "Location Sharing",
+    "accountSettings": "Account Settings",
+    "twoFactorAuth": "Two-Factor Authentication",
+    "language": "Language",
+    "english": "English",
+    "swahili": "Swahili",
+    "passwordProtection": "Password Protection",
+    "dataBackup": "Data Backup",
+    "saveChanges": "Save Changes",
+    "saving": "Saving..."
+  }
+  

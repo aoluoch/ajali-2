@@ -11,9 +11,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
 
+
 # Create Flask app and API
 app = Flask(__name__)
-CORS(app)
+CORS(app,supports_credentials=True, origins=("http://localhost:5173"))
 api = Api(app)
 
 # Load configuration settings
@@ -100,7 +101,10 @@ class UserLoginResource(Resource):
 
             return {
                 'message': 'Login successful',
-                'user': user.to_dict()
+               'user': user.to_dict(),
+               #'user': {
+                   # 'id': user.id,
+                # }
             }, 200
 
         return {'message': 'Invalid username or password'}, 401

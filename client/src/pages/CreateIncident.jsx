@@ -2,18 +2,18 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
-import "leaflet-geosearch/dist/geosearch.css"; // Import styles for GeoSearch
+import "leaflet-geosearch/dist/geosearch.css";
 
 const CreateIncident = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [incidentType, setIncidentType] = useState(""); // Empty initially
+  const [incidentType, setIncidentType] = useState("");
   const [mediaFiles, setMediaFiles] = useState([]);
   const [location, setLocation] = useState(null);
   const [manualCoordinates, setManualCoordinates] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
+  
   const LocationSetter = () => {
     useMapEvents({
       click(e) {
@@ -58,6 +58,20 @@ const CreateIncident = () => {
     setMediaFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "ajali-default");
+
+    try {
+      const response = await axios.post(`https://api.cloudinary.com/v1_1/dhmw4vdgc/upload`, formData);
+      return response.data.secure_url;
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary", error.response?.data || error.message);
+      return null;
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!mediaFiles.length) {
@@ -77,18 +91,28 @@ const CreateIncident = () => {
     formData.append("latitude", location[0]);
     formData.append("longitude", location[1]);
 
-    mediaFiles.forEach((file, index) => {
-      formData.append(`media[${index}]`, file);
-    });
+    // Upload media to Cloudinary first and get the URLs
+    const mediaUrls = [];
+    for (const file of mediaFiles) {
+      const url = await uploadToCloudinary(file);
+      if (url) mediaUrls.push(url);
+    }
+
+    if (mediaUrls.length === 0) {
+      setErrorMessage("Failed to upload media.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Append media files directly to FormData for backend
+    mediaFiles.forEach((file) => formData.append("media", file));
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/incidents", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await axios.post("http://127.0.0.1:5000/incidents", formData);
       console.log("Incident created:", response.data);
       setIsSubmitting(false);
     } catch (error) {
-      console.error("Error submitting incident:", error);
+      console.error("Error submitting incident:", error.response?.data || error.message);
       setErrorMessage("Failed to submit incident. Please try again.");
       setIsSubmitting(false);
     }
@@ -134,22 +158,23 @@ const CreateIncident = () => {
           <label htmlFor="incidentType" className="block text-lg font-medium text-gray-700">
             Incident Type <span className="text-red-500">*</span>
           </label>
-          <p className="text-sm text-gray-600 mb-2">
-            <strong>Red Flag:</strong> Critical issues requiring urgent attention (e.g., accidents or emergencies).
-            <br />
-            <strong>Intervention:</strong> Issues needing action but not immediately critical (e.g., hazardous road conditions).
-          </p>
           <select
             id="incidentType"
             value={incidentType}
             onChange={(e) => setIncidentType(e.target.value)}
             className={`w-full p-3 rounded-md text-white focus:outline-none ${
-              !incidentType ? 'bg-gray-200' : incidentType === "Red Flag" ? "bg-red-600" : "bg-[#FBC02D]"
+              !incidentType ? "bg-gray-200" : incidentType === "Red Flag" ? "bg-red-600" : "bg-[#FBC02D]"
             }`}
           >
-            <option value="" disabled className="text-gray-500">Select Incident Type</option>
-            <option value="Red Flag" className="text-white">Red Flag</option>
-            <option value="Intervention" className="text-white">Intervention</option>
+            <option value="" disabled className="text-gray-500">
+              Select Incident Type
+            </option>
+            <option value="Red Flag" className="text-white">
+              Red Flag
+            </option>
+            <option value="Intervention" className="text-white">
+              Intervention
+            </option>
           </select>
         </div>
 
@@ -199,9 +224,6 @@ const CreateIncident = () => {
           <label className="block text-lg font-medium text-gray-700">
             Location <span className="text-red-500">*</span>
           </label>
-          <p className="text-sm text-gray-600 mb-2">
-            Click on the map or use the search bar to select a location.
-          </p>
           <MapContainer center={[-1.285573, 36.830845]} zoom={12} style={{ height: "300px", width: "100%" }}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <LocationSetter />

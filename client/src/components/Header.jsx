@@ -1,41 +1,56 @@
-import { Bell, Settings, LogOut, Menu } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import NotificationBadge from './NotificationBadge';  // Corrected import based on your file structure
+import { Settings, LogOut, AlertTriangle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import NotificationBadge from './NotificationBadge';
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ username }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken'); 
+    localStorage.removeItem('user'); 
+    navigate('/login'); 
+  };
+
   return (
-    <header className="bg-primary-600 text-white p-4 flex items-center justify-between shadow-lg">
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={onMenuClick}
-          className="lg:hidden"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <Link to="/home" className="text-2xl sm:text-3xl font-bold hover:text-primary-100">
-          Ajali!
-        </Link>
-      </div>
+    <header className="bg-white shadow-md fixed w-full z-50 border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          {/* Logo and App Name */}
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="h-8 w-8 text-primary-600" />
+            <Link
+              to="/home"
+              className="font-bold text-xl text-gray-900 hover:text-primary-700 transition-colors"
+            >
+              Ajali!
+            </Link>
+          </div>
 
-      <div className="flex items-center space-x-3 sm:space-x-6">
-        <Link to="/notifications" className="relative hover:text-primary-100">
-          <NotificationBadge />
-          <Bell className="h-6 w-6" />
-        </Link>
-        <Link to="/settings" className="hover:text-primary-100 hidden sm:block">
-          <Settings className="h-6 w-6" />
-        </Link>
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Placeholder for username if needed */}
-          <span className="hidden md:block">Username</span>
-          <button
-            // Placeholder for logout functionality
-            onClick={() => console.log('Logging out')}
-            className="flex items-center space-x-1 bg-primary-700 px-2 sm:px-4 py-2 rounded-lg hover:bg-primary-800 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="hidden sm:block">Logout</span>
-          </button>
+          {/* Actions Section */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              to="/notifications"
+              className="relative text-gray-700 hover:text-primary-600"
+            >
+              <NotificationBadge />
+            </Link>
+            <Link
+              to="/settings"
+              className="text-gray-700 hover:text-primary-600"
+            >
+              <Settings className="h-6 w-6" />
+            </Link>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-700 hidden md:block">{username}</span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 bg-primary-600 px-4 py-2 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="hidden sm:block">Logout</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>

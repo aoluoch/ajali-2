@@ -30,6 +30,7 @@ const Login = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
+      
 
       // Assuming registration was successful, navigate to login page
       setIsRegistering(false);
@@ -56,8 +57,17 @@ const Login = () => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Assuming login was successful, store the token or session data
-      localStorage.setItem('authToken', data.token);  // Store token in localStorage (or sessionStorage)
+      //Assuming the backend returns user data and token
+      const { token, user } = data;
+
+      //Store the token and user data in localStorage
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));  // Store user data in localStorage
+      //Assuming the backend returns user data and token
+    // const { token, user } = data;
+
+    // localStorage.setItem('user', JSON.stringify(user));  // Store user data in localStorage
+    // localStorage.setItem('userId', user.id); // Store user ID in localStorage
 
       // Navigate to the profile page after login
       navigate('/profile');
