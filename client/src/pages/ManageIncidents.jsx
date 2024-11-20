@@ -71,3 +71,4 @@ const ManageIncidents = () => {
 };
 
 export default ManageIncidents;
+

@@ -1,68 +1,38 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import ProtectedRoute from './components/ProtectedRoute';
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Layout from './components/Layout';
-import ContactPage from './pages/ContactPage';
-import CreateIncident from './pages/CreateIncident';
+import LandingPage from './components/LandingPage';
 import HomePage from './pages/HomePage';
-import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
-import ManageIncidents from './pages/ManageIncidents';
+import CreateIncident from './pages/CreateIncident';
 import MyProfile from './pages/MyProfile';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
+import Login from './pages/Login';
+import Admin from './components/Admin'; 
+import ContactPage from './pages/ContactPage';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public routes */}
+        {/* Landing page as default route */}
         <Route path="/" element={<LandingPage />} />
+        
+        {/* Layout wrapper for protected routes */}
+        <Route element={<Layout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/create-incident" element={<CreateIncident />} />
+          <Route path="/profile" element={<MyProfile />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
+
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<Admin />} />
         <Route path="/contact" element={<ContactPage />} />
 
-        {/* Protected routes */}
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <Layout>
-              <HomePage />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/create-incident" element={
-          <ProtectedRoute>
-            <Layout>
-              <CreateIncident />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Layout>
-              <MyProfile />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/notifications" element={
-          <ProtectedRoute>
-            <Layout>
-              <Notifications />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/manage-incidents" element={
-          <ProtectedRoute>
-            <Layout>
-              <ManageIncidents />
-            </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Layout>
-              <Settings />
-            </Layout>
-          </ProtectedRoute>
-        } />
+        {/* Redirect all unknown routes to landing page */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
