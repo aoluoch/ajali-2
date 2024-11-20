@@ -11,12 +11,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);  // Local loading state
   const [error, setError] = useState(null);  // Local error state
-  const [is_admin, setis_admin] = useState ("")
-  const [formData, setForm] = useState({
-    email: "",
-    password: "",
-    is_admin: "",
-})
+  
   const navigate = useNavigate();
 
   // Function to handle API call for registration
@@ -52,11 +47,10 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-      console.log(data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
@@ -96,7 +90,7 @@ const Login = () => {
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Home
         </Link>
-  
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -110,13 +104,13 @@ const Login = () => {
           <h2 className="text-center text-3xl font-bold text-gray-900 mb-8">
             {isRegistering ? 'Create Account' : 'Sign in to Ajali!'}
           </h2>
-  
+
           {error && (
             <div className="bg-primary-50 border border-primary-200 text-primary-700 px-4 py-3 rounded mb-4">
               {error}
             </div>
           )}
-  
+
           <motion.form
             key={isRegistering ? 'register' : 'login'}
             initial={{ opacity: 0, x: -20 }}
@@ -142,7 +136,7 @@ const Login = () => {
                 </div>
               </div>
             )}
-  
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Email address
@@ -150,15 +144,15 @@ const Login = () => {
               <div className="mt-1 relative">
                 <input
                   type="email"
-                  value={formData.email}
-                  onChange={(e) => setForm(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   required
                 />
                 <Mail className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
             </div>
-  
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Password
@@ -166,45 +160,15 @@ const Login = () => {
               <div className="mt-1 relative">
                 <input
                   type="password"
-                  value={formData.password}
-                  onChange={(e) => setForm(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   required
                 />
                 <Lock className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
             </div>
-  
-            {/* User/Admin is_admin Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Select role
-              </label>
-              <div className="mt-1 space-y-2">
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="is_admin"
-                    value={formData.is_admin}
-                    defaultChecked
-                    className="form-radio text-primary-600"
-                    onChange={(e) => setForm(e.target.value)}
-                  />
-                  <span className="ml-2 text-gray-700">User</span>
-                </label>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="is_admin"
-                    value={formData.is_admin}
-                    className="form-radio text-primary-600"
-                    onChange={(e) => setForm(e.target.value)}
-                  />
-                  <span className="ml-2 text-gray-700">Admin</span>
-                </label>
-              </div>
-            </div>
-  
+
             <div>
               <Button
                 type="submit"
@@ -218,7 +182,7 @@ const Login = () => {
               </Button>
             </div>
           </motion.form>
-  
+
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsRegistering(!isRegistering)}
