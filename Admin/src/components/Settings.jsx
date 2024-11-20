@@ -1,197 +1,103 @@
 import { useState } from 'react';
-import { Bell, Shield, User } from 'lucide-react';
+import { Bell, Check, Trash2 } from 'lucide-react';
 
-const Settings = () => {
-  const [loading, setLoading] = useState(false);
+const Notifications = () => {
+  // Sample static notifications data, replace this with dynamic data as needed
+  const [notifications, setNotifications] = useState([
+    { id: '1', type: 'success', message: 'Your profile has been updated successfully.' },
+    { id: '2', type: 'error', message: 'Failed to update your password.' },
+    { id: '3', type: 'success', message: 'You have a new message.' },
+  ]);
+  const [filter, setFilter] = useState('all');
 
-  const [settings, setSettings] = useState({
-    notifications: {
-      email: true,
-      push: true,
-      sms: false
-    },
-    privacy: {
-      profileVisibility: 'public',
-      locationSharing: true
-    },
-    account: {
-      language: 'en',
-      dataBackup: false
-    }
-  });
-
-  const handleToggle = (category, setting) => {
-    setSettings(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [setting]: !prev[category][setting]
-      }
-    }));
+  const removeNotification = (id) => {
+    setNotifications(prevNotifications => prevNotifications.filter(notification => notification.id !== id));
   };
 
-  const handleSelect = (category, setting, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [setting]: value
-      }
-    }));
-  };
-
-  const handleSave = async () => {
-    setLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('Settings updated successfully');
-    } catch {
-      alert('Failed to update settings');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredNotifications = notifications.filter(notification =>
+    filter === 'all' || notification.type === filter
+  );
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-gray-50 p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-8">Settings</h1>
-
-        {/* Privacy Settings */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Shield className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold">Privacy Settings</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span>Profile Visibility</span>
-              <select
-                value={settings.privacy.profileVisibility}
-                onChange={(e) => handleSelect('privacy', 'profileVisibility', e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1"
-              >
-                <option value="public">Public</option>
-                <option value="private">Private</option>
-                <option value="contacts">Contacts Only</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span>Location Sharing</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.privacy.locationSharing}
-                  onChange={() => handleToggle('privacy', 'locationSharing')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Notification Settings */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Bell className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold">Notification Settings</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span>Email Notifications</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.email}
-                  onChange={() => handleToggle('notifications', 'email')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span>Push Notifications</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.push}
-                  onChange={() => handleToggle('notifications', 'push')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span>SMS Notifications</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.notifications.sms}
-                  onChange={() => handleToggle('notifications', 'sms')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Account Settings */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <User className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold">Account Settings</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span>Language</span>
-              <select
-                value={settings.account.language}
-                onChange={(e) => handleSelect('account', 'language', e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1"
-              >
-                <option value="en">English</option>
-                <option value="sw">Swahili</option>
-                <option value="fr">French</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span>Data Backup</span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.account.dataBackup}
-                  onChange={() => handleToggle('account', 'dataBackup')}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-center">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Notifications</h1>
+        <div className="flex space-x-2">
           <button
-            onClick={handleSave}
-            disabled={loading}
-            className="bg-blue-500 text-white rounded-md px-4 py-2 disabled:bg-gray-400"
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'all' ? 'bg-red-600 text-white' : 'bg-gray-100'
+            }`}
           >
-            {loading ? 'Saving...' : 'Save Settings'}
+            All
+          </button>
+          <button
+            onClick={() => setFilter('success')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'success' ? 'bg-green-600 text-white' : 'bg-gray-100'
+            }`}
+          >
+            Success
+          </button>
+          <button
+            onClick={() => setFilter('error')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'error' ? 'bg-red-600 text-white' : 'bg-gray-100'
+            }`}
+          >
+            Error
           </button>
         </div>
       </div>
+
+      {filteredNotifications.length === 0 ? (
+        <div className="text-center py-12">
+          <Bell className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No notifications</h3>
+          <p className="mt-2 text-gray-500">You&apos;re all caught up!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredNotifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`flex items-start justify-between p-4 rounded-lg ${
+                notification.type === 'success' ? 'bg-green-50' :
+                notification.type === 'error' ? 'bg-red-50' :
+                'bg-gray-50'
+              }`}
+            >
+              <div className="flex items-start space-x-3">
+                {notification.type === 'success' ? (
+                  <Check className="h-5 w-5 text-green-500 mt-0.5" />
+                ) : (
+                  <Bell className="h-5 w-5 text-red-500 mt-0.5" />
+                )}
+                <div>
+                  <p className={`font-medium ${
+                    notification.type === 'success' ? 'text-green-800' :
+                    notification.type === 'error' ? 'text-red-800' :
+                    'text-gray-800'
+                  }`}>
+                    {notification.message}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(notification.id).toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => removeNotification(notification.id)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <Trash2 className="h-5 w-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-export default Settings;
+export default Notifications;

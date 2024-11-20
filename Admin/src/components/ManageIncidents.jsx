@@ -1,184 +1,103 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import Navbar from './Navbar';
+import { useState } from 'react';
+import { Bell, Check, Trash2 } from 'lucide-react';
 
-function Manageincidents() {
-  const [incidents, setIncidents] = useState([]);
-  const [media, setMedia] = useState({ images: {}, videos: {} });
-  const [loading, setLoading] = useState(true);
-  const [change,setchange] = useState("resolved")
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch all incidents
-        const incidentsResponse = await axios.get('http://127.0.0.1:5000/incidents', {
-          withCredentials: true,
-        });
-        const fetchedIncidents = incidentsResponse.data;
+const Notifications = () => {
+  // Sample static notifications data, replace this with dynamic data as needed
+  const [notifications, setNotifications] = useState([
+    { id: '1', type: 'success', message: 'Your profile has been updated successfully.' },
+    { id: '2', type: 'error', message: 'Failed to update your password.' },
+    { id: '3', type: 'success', message: 'You have a new message.' },
+  ]);
+  const [filter, setFilter] = useState('all');
 
-        // Fetch images and videos for each incident
-        const mediaPromises = fetchedIncidents.map(async (incident) => {
-          const imagesResponse = await axios.get(
-            `http://127.0.0.1:5000/incidents/${incident.id}/images`,
-            { withCredentials: true }
-          );
-          const videosResponse = await axios.get(
-            `http://127.0.0.1:5000/incidents/${incident.id}/videos`,
-            { withCredentials: true }
-          );
-
-          return {
-            id: incident.id,
-            images: imagesResponse.data,
-            videos: videosResponse.data,
-          };
-        });
-
-        const mediaResults = await Promise.all(mediaPromises);
-
-        const images = {};
-        const videos = {};
-
-        mediaResults.forEach((item) => {
-          images[item.id] = item.images;
-          videos[item.id] = item.videos;
-        });
-
-        setIncidents(fetchedIncidents);
-        setMedia({ images, videos });
-      } catch (err) {
-        console.error('Error fetching incidents and media:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleStatusChange = (id, newStatus) => {
-    // Update the status on the backend
-    fetch(`http://127.0.0.1:5000/incidents/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: newStatus }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // If the backend update is successful, update the status locally in the UI
-        setIncidents((prevIncidents) =>
-          prevIncidents.map((incident) =>
-            incident.id === id ? { ...incident, status: newStatus } : incident
-          )
-        );
-        console.log('Status updated:', data);
-      })
-      .catch((error) => console.error('Error updating status:', error));
+  const removeNotification = (id) => {
+    setNotifications(prevNotifications => prevNotifications.filter(notification => notification.id !== id));
   };
 
-  const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:5000/incidents/${id}`, {
-      method: 'DELETE',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // Remove the incident from the local state
-        setIncidents((prevIncidents) =>
-          prevIncidents.filter((incident) => incident.id !== id)
-        );
-        console.log('Incident deleted:', data);
-      })
-      .catch((error) => console.error('Error deleting incident:', error));
-  };
+  const filteredNotifications = notifications.filter(notification =>
+    filter === 'all' || notification.type === filter
+  );
 
   return (
-    <>
-    <Navbar/>
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Incident Management</h1>
-      {loading ? (
-        <p>Loading...</p>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Notifications</h1>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'all' ? 'bg-red-600 text-white' : 'bg-gray-100'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter('success')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'success' ? 'bg-green-600 text-white' : 'bg-gray-100'
+            }`}
+          >
+            Success
+          </button>
+          <button
+            onClick={() => setFilter('error')}
+            className={`px-4 py-2 rounded-lg ${
+              filter === 'error' ? 'bg-red-600 text-white' : 'bg-gray-100'
+            }`}
+          >
+            Error
+          </button>
+        </div>
+      </div>
+
+      {filteredNotifications.length === 0 ? (
+        <div className="text-center py-12">
+          <Bell className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No notifications</h3>
+          <p className="mt-2 text-gray-500">You&apos;re all caught up!</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {incidents.map((incident) => (
+        <div className="space-y-4">
+          {filteredNotifications.map((notification) => (
             <div
-              key={incident.id}
-              className="p-4 bg-white shadow-lg rounded-lg hover:shadow-xl transition duration-300 ease-in-out"
+              key={notification.id}
+              className={`flex items-start justify-between p-4 rounded-lg ${
+                notification.type === 'success' ? 'bg-green-50' :
+                notification.type === 'error' ? 'bg-red-50' :
+                'bg-gray-50'
+              }`}
             >
-              {/* Incident Title and Description */}
-              <Link to={`/incident/${incident.id}`} className="text-blue-600 font-semibold text-lg">
-                <h2>{incident.description}</h2>
-              </Link>
-              <p className="text-gray-600 text-sm">{incident.created_at}</p>
-
-              {/* Media Section: Images and Videos */}
-              <div className="mt-4">
-                {media.images[incident.id] && media.images[incident.id].length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold">Images</h3>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {media.images[incident.id].map((image, index) => (
-                        <img
-                          key={index}
-                          src={image.image_url}
-                          alt={`incident-${incident.id}-image-${index}`}
-                          className="w-full h-32 object-cover rounded-md"
-                        />
-                      ))}
-                    </div>
-                  </div>
+              <div className="flex items-start space-x-3">
+                {notification.type === 'success' ? (
+                  <Check className="h-5 w-5 text-green-500 mt-0.5" />
+                ) : (
+                  <Bell className="h-5 w-5 text-red-500 mt-0.5" />
                 )}
-
-                {media.videos[incident.id] && media.videos[incident.id].length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-lg font-semibold">Videos</h3>
-                    <div className="space-y-2">
-                      {media.videos[incident.id].map((video, index) => (
-                        <div key={index}>
-                          <video controls className="w-full h-32 object-cover rounded-md">
-                            <source src={video.video_url} type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div>
+                  <p className={`font-medium ${
+                    notification.type === 'success' ? 'text-green-800' :
+                    notification.type === 'error' ? 'text-red-800' :
+                    'text-gray-800'
+                  }`}>
+                    {notification.message}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(notification.id).toLocaleTimeString()}
+                  </p>
+                </div>
               </div>
-
-              {/* Status Update Dropdown */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium">Change Status:</label>
-                <select
-                  value={incident.status}
-                  onChange={(e) => (e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md mt-2"
-                >
-                  <option value="under investigation">Under Investigation</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="resolved">Resolved</option>
-                </select>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={() => handleDelete(incident.id)}
-                  className="bg-red-500 text-white py-2 px-4 rounded-md text-sm hover:bg-red-600"
-                >
-                  🗑️ Delete
-                </button>
-              </div>
+              <button
+                onClick={() => removeNotification(notification.id)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <Trash2 className="h-5 w-5" />
+              </button>
             </div>
           ))}
         </div>
       )}
-    </div> 
-    </>
+    </div>
   );
-}
+};
 
-export default Manageincidents;
+export default Notifications;

@@ -14,7 +14,8 @@ predefined_users = [
     {"username": "user7", "email": "user7@example.com", "password_hash": "hash7"},
     {"username": "user8", "email": "user8@example.com", "password_hash": "hash8"},
     {"username": "user9", "email": "user9@example.com", "password_hash": "hash9"},
-    {"username": "user10", "email": "user10@example.com", "password_hash": "hash10"}
+    {"username": "user10", "email": "user10@example.com", "password_hash": "hash10"},
+    {"username": "Fatma", "email": "fatma@example.com", "password_hash": "hash9","is_admin": True},
 ]
 
 predefined_incidents = [
