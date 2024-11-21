@@ -16,8 +16,8 @@ const MyProfile = () => {
     setTimeout(() => {
       setUser({
         id: 1,
-        username: 'JohnDoe',
-        email: 'john@example.com',
+        username: 'Mark Tony',
+        email: 'marktony@.com',
         profilePicture: '', // Add your picture URL here
       });
       // Mock incidents data

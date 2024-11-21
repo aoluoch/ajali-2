@@ -129,13 +129,15 @@ class IncidentListResource(Resource):
 
         # Create new incident
         new_incident = IncidentReport(
+            title=data['title'],
             description=data['description'],
-            status=data.get('status', 'under investigation'),
+            incident_type=data['incidentType'],  # Assuming `incident_type` is a valid column
             latitude=data['latitude'],
             longitude=data['longitude'],
+            media=",".join(data['media']),  # Store media URLs as a comma-separated string
             user_id=session.get('user_id')  # Use user_id from session
         )
-
+        
         try:
             db.session.add(new_incident)
             db.session.commit()

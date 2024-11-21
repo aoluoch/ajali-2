@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
-import "leaflet-geosearch/dist/geosearch.css"; // Import styles for GeoSearch
+import "leaflet-geosearch/dist/geosearch.css";
 
 const CreateIncident = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [incidentType, setIncidentType] = useState(""); // Empty initially
+  const [incidentType, setIncidentType] = useState(""); 
   const [mediaFiles, setMediaFiles] = useState([]);
   const [location, setLocation] = useState(null);
   const [manualCoordinates, setManualCoordinates] = useState("");
@@ -58,6 +58,25 @@ const CreateIncident = () => {
     setMediaFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "ajali-default");
+    formData.append("cloud_name", "dhmw4vdgc");
+
+    try {
+      const response = await axios.post("https://api.cloudinary.com/v1_1/dhmw4vdgc/image/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data.secure_url;
+    } catch (error) {
+      console.error("Error uploading file to Cloudinary", error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!mediaFiles.length) {
@@ -77,9 +96,21 @@ const CreateIncident = () => {
     formData.append("latitude", location[0]);
     formData.append("longitude", location[1]);
 
-    mediaFiles.forEach((file, index) => {
-      formData.append(`media[${index}]`, file);
-    });
+    // Upload media to Cloudinary first and get the URLs
+    const mediaUrls = [];
+    for (const file of mediaFiles) {
+      const url = await uploadToCloudinary(file);
+      if (url) mediaUrls.push(url);
+    }
+
+    if (mediaUrls.length === 0) {
+      setErrorMessage("Failed to upload media.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Add media URLs to the form data
+    formData.append("media", JSON.stringify(mediaUrls));
 
     try {
       const response = await axios.post("http://127.0.0.1:5000/incidents", formData, {

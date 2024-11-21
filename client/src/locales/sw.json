@@ -1,0 +1,20 @@
+{
+    "settings": "Mipangilio",
+    "notificationSettings": "Mipangilio ya Arifa",
+    "emailNotifications": "Arifa za Barua pepe",
+    "pushNotifications": "Arifa za Push",
+    "smsNotifications": "Arifa za SMS",
+    "privacySettings": "Mipangilio ya Faragha",
+    "profileVisibility": "Onyesho la Profaili",
+    "locationSharing": "Shiriki Mahali",
+    "accountSettings": "Mipangilio ya Akaunti",
+    "twoFactorAuth": "Uthibitishaji wa Hatua Mbili",
+    "language": "Lugha",
+    "english": "Kiingereza",
+    "swahili": "Kiswahili",
+    "passwordProtection": "Ulinzi wa Neno la Siri",
+    "dataBackup": "Hifadhi ya Taarifa",
+    "saveChanges": "Hifadhi Mabadiliko",
+    "saving": "Inahifadhi..."
+  }
+  
