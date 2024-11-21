@@ -1,81 +1,111 @@
-from app import app, db
-from models.user import User
-from models.incident_report import IncidentReport
-from models.incident_image import IncidentImage
-from models.incident_video import IncidentVideo
-
-predefined_users = [
-    {"username": "user1", "email": "user1@example.com", "password_hash": "hash1"},
-    {"username": "user2", "email": "user2@example.com", "password_hash": "hash2"},
-    {"username": "user3", "email": "user3@example.com", "password_hash": "hash3"},
-    {"username": "user4", "email": "user4@example.com", "password_hash": "hash4"},
-    {"username": "user5", "email": "user5@example.com", "password_hash": "hash5"},
-    {"username": "user6", "email": "user6@example.com", "password_hash": "hash6"},
-    {"username": "user7", "email": "user7@example.com", "password_hash": "hash7"},
-    {"username": "user8", "email": "user8@example.com", "password_hash": "hash8"},
-    {"username": "user9", "email": "user9@example.com", "password_hash": "hash9"},
-    {"username": "user10", "email": "user10@example.com", "password_hash": "hash10"}
-]
-
-predefined_incidents = [
-    {"description": "Incident 1", "status": "under investigation", "latitude": -1.286389, "longitude": 36.817223},
-    {"description": "Incident 2", "status": "resolved", "latitude": -1.2833, "longitude": 36.8167},
-    {"description": "Incident 3", "status": "under investigation", "latitude": -1.2901, "longitude": 36.8219},
-    {"description": "Incident 4", "status": "rejected", "latitude": -1.2876, "longitude": 36.8148},
-    {"description": "Incident 5", "status": "resolved", "latitude": -1.2890, "longitude": 36.8103},
-    {"description": "Incident 6", "status": "under investigation", "latitude": -1.2850, "longitude": 36.8197},
-    {"description": "Incident 7", "status": "rejected", "latitude": -1.2849, "longitude": 36.8139},
-    {"description": "Incident 8", "status": "resolved", "latitude": -1.2828, "longitude": 36.8106},
-    {"description": "Incident 9", "status": "under investigation", "latitude": -1.2835, "longitude": 36.8200},
-    {"description": "Incident 10", "status": "rejected", "latitude": -1.2870, "longitude": 36.8165}
-]
+from models import db, User, IncidentReport
+import datetime
 
 def seed_data():
-    with app.app_context():
-        for user_data in predefined_users:
-            existing_user = User.query.filter_by(email=user_data["email"]).first()
-            if existing_user:
-                print(f"User {user_data['username']} already exists, skipping...")
-                continue
-            user = User(
-                username=user_data["username"],
-                email=user_data["email"],
-                password_hash=user_data["password_hash"],
-            )
-            db.session.add(user)
-            db.session.commit()
-            print(f"User '{user.username}' created successfully!")
+    # Clear existing data
+    db.session.query(IncidentReport).delete()
+    db.session.query(User).delete()
 
-        users = User.query.all()
-        for i, incident_data in enumerate(predefined_incidents):
-            user = users[i % len(users)]
-            existing_incident = IncidentReport.query.filter_by(description=incident_data["description"]).first()
-            if existing_incident:
-                print(f"Incident '{incident_data['description']}' already exists, skipping...")
-                continue
-            incident = IncidentReport(
-                description=incident_data["description"],
-                status=incident_data["status"],
-                latitude=incident_data["latitude"],
-                longitude=incident_data["longitude"],
-                user_id=user.id
-            )
-            db.session.add(incident)
-            db.session.commit()
-            print(f"Incident '{incident.description}' created for user '{user.username}'!")
+    # Create users
+    users = [
+        User(username="john_doe", email="john@example.com", password_hash="hashed_password_1"),
+        User(username="jane_smith", email="jane@example.com", password_hash="hashed_password_2"),
+        User(username="michael_brown", email="michael@example.com", password_hash="hashed_password_3"),
+        User(username="susan_clark", email="susan@example.com", password_hash="hashed_password_4"),
+        User(username="alice_jones", email="alice@example.com", password_hash="hashed_password_5"),
+    ]
 
-            image_url = f"http://example.com/image_{i+1}.jpg"
-            video_url = f"http://example.com/video_{i+1}.mp4"
+    db.session.add_all(users)
+    db.session.commit()
 
-            image = IncidentImage(report_id=incident.id, image_url=image_url)
-            video = IncidentVideo(report_id=incident.id, video_url=video_url)
+    # Create incident reports
+    incident_reports = [
+        IncidentReport(
+            user_id=users[0].id,
+            description="Car accident on Highway 1",
+            latitude=-1.286389,
+            longitude=36.817223,
+            image_url="http://example.com/images/accident1.jpg",
+            video_url="http://example.com/videos/accident1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[0].id,
+            description="Fire outbreak in residential area",
+            latitude=-1.2921,
+            longitude=36.8219,
+            image_url="http://example.com/images/fire1.jpg",
+            video_url="http://example.com/videos/fire1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[1].id,
+            description="Flooded road near city center",
+            latitude=-1.2921,
+            longitude=36.8279,
+            image_url="http://example.com/images/flood1.jpg",
+            video_url="http://example.com/videos/flood1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[2].id,
+            description="Building collapse in downtown",
+            latitude=-1.2930,
+            longitude=36.8130,
+            image_url="http://example.com/images/building1.jpg",
+            video_url="http://example.com/videos/building1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[3].id,
+            description="Hit-and-run incident reported",
+            latitude=-1.2889,
+            longitude=36.8150,
+            image_url="http://example.com/images/hitrun1.jpg",
+            video_url="http://example.com/videos/hitrun1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[4].id,
+            description="Tree fallen on power lines",
+            latitude=-1.2999,
+            longitude=36.7999,
+            image_url="http://example.com/images/tree1.jpg",
+            video_url="http://example.com/videos/tree1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[1].id,
+            description="Gas leak near the industrial area",
+            latitude=-1.3000,
+            longitude=36.8200,
+            image_url="http://example.com/images/gasleak1.jpg",
+            video_url="http://example.com/videos/gasleak1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[2].id,
+            description="Animal attack in the park",
+            latitude=-1.2819,
+            longitude=36.8172,
+            image_url="http://example.com/images/animal1.jpg",
+            video_url="http://example.com/videos/animal1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[3].id,
+            description="Protest blocking main road",
+            latitude=-1.2788,
+            longitude=36.8055,
+            image_url="http://example.com/images/protest1.jpg",
+            video_url="http://example.com/videos/protest1.mp4",
+        ),
+        IncidentReport(
+            user_id=users[4].id,
+            description="Oil spill on major highway",
+            latitude=-1.2950,
+            longitude=36.8150,
+            image_url="http://example.com/images/oilspill1.jpg",
+            video_url="http://example.com/videos/oilspill1.mp4",
+        ),
+    ]
 
-            db.session.add(image)
-            db.session.add(video)
-            db.session.commit()
-            print(f"Image and video added to incident '{incident.description}'.")
+    db.session.add_all(incident_reports)
+    db.session.commit()
 
-        print("Seeding completed successfully!")
+    print("Seed data successfully inserted!")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     seed_data()

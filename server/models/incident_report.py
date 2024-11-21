@@ -17,8 +17,8 @@ class IncidentReport(db.Model, SerializerMixin):
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
 
     # Media Fields
-    image_urls = db.Column(db.Text, nullable=True)  # Comma-separated URLs for images
-    video_urls = db.Column(db.Text, nullable=True)  # Comma-separated URLs for videos
+    image_url = db.Column(db.Text, nullable=True) 
+    video_url = db.Column(db.Text, nullable=True)  
 
     # Relationship to User
     user = db.relationship('User', back_populates='incident_reports')

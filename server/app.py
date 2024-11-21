@@ -1,264 +1,140 @@
-from flask import Flask, request, jsonify, session, make_response
+from flask import Flask, request, session, jsonify
 from flask_restful import Api, Resource
-from flask_migrate import Migrate
-from flask_cors import CORS
-from models.extensions import db
-from models.user import User
-from models.incident_report import IncidentReport
-from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
-from datetime import timedelta
+from flask_session import Session
+from flask_bcrypt import Bcrypt
+from models import db, User, IncidentReport
+import datetime
 
-
-# Create Flask app and API
 app = Flask(__name__)
-CORS(app,supports_credentials=True, origins=("http://localhost:5173"))
 api = Api(app)
+bcrypt = Bcrypt(app)
 
-# Load configuration settings
-app.config['SECRET_KEY'] = 'ajali-2' 
-app.config['TESTING'] = True  # Set to True when running tests, False for production
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ajali.db'
-app.config['SESSION_PERMANENT'] = True  # Session persists across browser restarts
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Session lasts 1 day
+# Configure session
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
-# Initialize the database
+# Database configuration
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
-migrate = Migrate(app, db)
 
+# Create tables if not already created
+with app.app_context():
+    db.create_all()
 
-# ---------------- Session Helper Functions ----------------
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if app.config.get('TESTING'):
-            return f(*args, **kwargs)  # Bypass session validation for testing mode
+# Helper functions
+def authenticate_user(func):
+    """Decorator to ensure a user is authenticated."""
+    def wrapper(*args, **kwargs):
+        if not session.get("user_id"):
+            return {"message": "Unauthorized. Please log in."}, 401
+        return func(*args, **kwargs)
+    return wrapper
 
-        # Check if the user is logged in
-        if 'user_id' not in session:
-            return {'message': 'User not logged in'}, 401
-
-        return f(*args, **kwargs)
-    return decorated
-
-class CheckSession(Resource):
-    def get(self):
-        user_id = session.get('user_id')
-        if user_id:
-            user = User.query.get(user_id)
-            return {'name': user.name, 'id': user.id, 'email': user.email}, 200
-        return {}, 401
-
-api.add_resource(CheckSession, '/check_session')
-
-class UserRegisterResource(Resource):
+# Resources
+class UserResource(Resource):
     def post(self):
-        data = request.get_json()
+        """Register a new user."""
+        data = request.json
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
 
-        # Validate required fields
-        required_fields = ['username', 'email', 'password']
-        for field in required_fields:
-            if field not in data:
-                return {'message': f'{field} is required'}, 400
+        if not username or not email or not password:
+            return {"message": "All fields are required."}, 400
 
-        # Check if user already exists
-        if User.query.filter_by(username=data['username']).first():
-            return {'message': 'Username already exists'}, 400
-        if User.query.filter_by(email=data['email']).first():
-            return {'message': 'Email already exists'}, 400
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            return {"message": "Username or email already exists."}, 400
 
-        # Create new user
-        new_user = User(
-            username=data['username'],
-            email=data['email'],
-            password_hash=generate_password_hash(data['password'])
+        hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
+        user = User(username=username, email=email, password_hash=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+
+        return {"message": "User registered successfully."}, 201
+
+    def post_login(self):
+        """Log in a user."""
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return {"message": "All fields are required."}, 400
+
+        user = User.query.filter_by(username=username).first()
+        if not user or not bcrypt.check_password_hash(user.password_hash, password):
+            return {"message": "Invalid username or password."}, 401
+
+        session["user_id"] = user.id
+        return {"message": f"Welcome {username}!"}, 200
+
+    @authenticate_user
+    def post_logout(self):
+        """Log out a user."""
+        session.pop("user_id", None)
+        return {"message": "Logged out successfully."}, 200
+
+
+class IncidentReportResource(Resource):
+    @authenticate_user
+    def post(self):
+        """Create a new incident report."""
+        user_id = session["user_id"]
+        data = request.json
+        description = data.get("description")
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+        image_url = data.get("image_url")
+        video_url = data.get("video_url")
+
+        if not description or not latitude or not longitude:
+            return {"message": "Description, latitude, and longitude are required."}, 400
+
+        incident = IncidentReport(
+            user_id=user_id,
+            description=description,
+            latitude=latitude,
+            longitude=longitude,
+            image_url=image_url,
+            video_url=video_url
         )
+        db.session.add(incident)
+        db.session.commit()
 
-        try:
-            db.session.add(new_user)
-            db.session.commit()
-            return {'message': 'User created successfully'}, 201
-        except Exception as e:
-            db.session.rollback()
-            return {'message': f'Error creating user: {str(e)}'}, 500
+        return {"message": "Incident reported successfully."}, 201
 
-class UserLoginResource(Resource):
-    def post(self):
-        data = request.get_json()
-
-        # Validate required fields
-        if not data.get('email') or not data.get('password'):
-            return {'message': 'Username and password are required'}, 400
-
-        user = User.query.filter_by(email=data['email']).first()
-
-        if user and check_password_hash(user.password_hash, data['password']):
-            # Set session
-            session['user_id'] = user.id
-            session.permanent = True  # Session lasts as per PERMANENT_SESSION_LIFETIME
-
-            return {
-                'message': 'Login successful',
-               'user': user.to_dict(),
-               #'user': {
-                   # 'id': user.id,
-                # }
-            }, 200
-
-        return {'message': 'Invalid username or password'}, 401
-
-class UserLogoutResource(Resource):
-    def post(self):
-        session.clear()
-        return {'message': 'Logged out successfully'}, 200
-
-# ---------------- Incident Resources ----------------
-class IncidentListResource(Resource):
-    @login_required
+    @authenticate_user
     def get(self):
-        incidents = IncidentReport.query.all()
-        return jsonify([incident.to_dict() for incident in incidents])
+        """Get all incident reports for the logged-in user."""
+        user_id = session["user_id"]
+        incidents = IncidentReport.query.filter_by(user_id=user_id).all()
+        return [incident.to_dict() for incident in incidents], 200
 
-    @login_required
-    def post(self):
-        data = request.get_json()
+    @authenticate_user
+    def put(self, incident_id):
+        """Update an incident report."""
+        user_id = session["user_id"]
+        incident = IncidentReport.query.filter_by(id=incident_id, user_id=user_id).first()
 
-        # Validate required fields
-        required_fields = ['description', 'latitude', 'longitude']
-        for field in required_fields:
-            if field not in data:
-                return {'message': f'{field} is required'}, 400
+        if not incident:
+            return {"message": "Incident not found or unauthorized access."}, 404
 
-        # Create new incident
-        new_incident = IncidentReport(
-            description=data['description'], 
-            status=data.get('status', 'under investigation'),
-            latitude=data['latitude'],
-            longitude=data['longitude'],
-            user_id=session.get('user_id')  # Use user_id from session
-        )
-
-        try:
-            db.session.add(new_incident)
-            db.session.commit()
-            return {'message': 'Incident created successfully'}, 201
-        except Exception as e:
-            db.session.rollback()
-            return {'message': f'Error creating incident: {str(e)}'}, 500
-
-class IncidentResource(Resource):
-    @login_required
-    def get(self, id):
-        incident = IncidentReport.query.get_or_404(id)
-        return jsonify(incident.to_dict())
-
-    @login_required
-    def put(self, id):
-        incident = IncidentReport.query.get_or_404(id)
-
-        if incident.user_id != session.get('user_id'):
-            return jsonify({'message': 'Permission denied'}), 403
-
-        data = request.get_json()
-        incident.description = data.get('description', incident.description)
-        incident.status = data.get('status', incident.status) if session.get('is_admin') else incident.status
-        incident.latitude = data.get('latitude', incident.latitude)
-        incident.longitude = data.get('longitude', incident.longitude)
+        data = request.json
+        incident.description = data.get("description", incident.description)
+        incident.latitude = data.get("latitude", incident.latitude)
+        incident.longitude = data.get("longitude", incident.longitude)
+        incident.image_url = data.get("image_url", incident.image_url)
+        incident.video_url = data.get("video_url", incident.video_url)
+        incident.updated_at = datetime.datetime.utcnow()
 
         db.session.commit()
-        return jsonify(incident.to_dict())
+        return {"message": "Incident updated successfully."}, 200
 
-    @login_required
-    def delete(self, id):
-        incident = IncidentReport.query.get_or_404(id)
+# Add resources to the API
+api.add_resource(UserResource, "/users", "/users/login", "/users/logout")
+api.add_resource(IncidentReportResource, "/incidents", "/incidents/<int:incident_id>")
 
-        if incident.user_id != session.get('user_id') and not session.get('is_admin'):
-            return make_response({"message": "Permission denied"}, 403)
-
-        # Delete associated images and videos
-        incident_images = IncidentImage.query.filter_by(report_id=incident.id).all()
-        for image in incident_images:
-            db.session.delete(image)
-
-        incident_videos = IncidentVideo.query.filter_by(report_id=incident.id).all()
-        for video in incident_videos:
-            db.session.delete(video)
-
-        db.session.delete(incident)
-
-        try:
-            db.session.commit()
-            return make_response({"message": "Incident report and associated media deleted"}, 204)
-        except Exception as e:
-            db.session.rollback()
-            return make_response({"message": f"An error occurred: {str(e)}"}, 500)
-
-# ------------------------- Incident Image & Video Resources -------------------------
-class IncidentImageResource(Resource):
-    @login_required
-    def post(self, incident_id):
-        data = request.get_json()
-        new_image = IncidentImage(report_id=incident_id, image_url=data['image_url'])
-        db.session.add(new_image)
-        db.session.commit()
-        return make_response({"message": "Image posted"}, 201)
-
-    @login_required
-    def get(self, incident_id):
-        incident = IncidentReport.query.get_or_404(incident_id)
-        return jsonify([image.to_dict() for image in incident.images])
-
-class IncidentImageSingleResource(Resource):
-    @login_required
-    def delete(self, incident_id, image_id):
-        image = IncidentImage.query.filter_by(report_id=incident_id, id=image_id).first_or_404()
-        report = IncidentReport.query.get(image.report_id)
-
-        if report.user_id != session.get('user_id') and not session.get('is_admin'):
-            return make_response({"message": "Permission denied"}, 403)
-
-        db.session.delete(image)
-        db.session.commit()
-
-        return make_response({"message": "Incident image deleted"}, 204)
-
-class IncidentVideoResource(Resource):
-    @login_required
-    def post(self, incident_id):
-        data = request.get_json()
-        new_video = IncidentVideo(report_id=incident_id, video_url=data['video_url'])
-        db.session.add(new_video)
-        db.session.commit()
-        return make_response({"message": "Incident video posted"}, 201)
-
-    @login_required
-    def get(self, incident_id):
-        incident = IncidentReport.query.get_or_404(incident_id)
-        return jsonify([video.to_dict() for video in incident.videos])
-
-class IncidentVideoSingleResource(Resource):
-    @login_required
-    def delete(self, incident_id, video_id):
-        video = IncidentVideo.query.filter_by(report_id=incident_id, id=video_id).first_or_404()
-        report = IncidentReport.query.get(video.report_id)
-
-        if report.user_id != session.get('user_id') and not session.get('is_admin'):
-            return make_response({"message": "Permission denied"}, 403)
-
-        db.session.delete(video)
-        db.session.commit()
-        return make_response({"message": "Incident video deleted"}, 204)
-
-# ------------------------- API Routes Setup -------------------------
-api.add_resource(UserRegisterResource, '/users')
-api.add_resource(UserLoginResource, '/login')
-api.add_resource(UserLogoutResource, '/logout')
-api.add_resource(IncidentListResource, '/incidents')
-api.add_resource(IncidentResource, '/incidents/<int:id>')
-api.add_resource(IncidentImageResource, '/incidents/<int:incident_id>/images')
-api.add_resource(IncidentImageSingleResource, '/incidents/<int:incident_id>/images/<int:image_id>')
-api.add_resource(IncidentVideoResource, '/incidents/<int:incident_id>/videos')
-api.add_resource(IncidentVideoSingleResource, '/incidents/<int:incident_id>/videos/<int:video_id>')
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+if __name__ == "__main__":
+    app.run(debug=True)
