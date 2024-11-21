@@ -5,8 +5,6 @@ from flask_cors import CORS
 from models.extensions import db
 from models.user import User
 from models.incident_report import IncidentReport
-from models.incident_image import IncidentImage
-from models.incident_video import IncidentVideo
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta
@@ -133,7 +131,7 @@ class IncidentListResource(Resource):
 
         # Create new incident
         new_incident = IncidentReport(
-            description=data['description'],
+            description=data['description'], 
             status=data.get('status', 'under investigation'),
             latitude=data['latitude'],
             longitude=data['longitude'],

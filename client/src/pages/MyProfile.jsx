@@ -100,9 +100,6 @@ const MyProfile = () => {
     }
   };
 
-  const filteredIncidents = incidents.filter((incident) => 
-    filter === 'all' || incident.status.toLowerCase() === filter
-  );
 
   const handleUpload = async (event) => {
     const file = event.target.files[0];

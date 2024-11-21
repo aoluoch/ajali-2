@@ -16,7 +16,6 @@ exceptiongroup==1.2.1
 executing==2.0.1
 Flask==3.0.3
 Flask-Cors==4.0.1
-Flask-JWT-Extended==4.6.0
 Flask-Login==0.6.3
 Flask-Migrate==4.0.7
 Flask-RESTful==0.3.10
@@ -67,7 +66,6 @@ pycountry==24.6.1
 pycryptodome==3.21.0
 pycryptodomex==3.21.0
 Pygments==2.18.0
-PyJWT==2.9.0
 pyparsing==3.1.4
 PySocks==1.7.1
 pytest==8.2.1

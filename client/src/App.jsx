@@ -7,7 +7,6 @@ import MyProfile from './pages/MyProfile';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
-import Admin from './components/Admin'; 
 import ContactPage from './pages/ContactPage';
 
 function App() {
@@ -28,7 +27,6 @@ function App() {
 
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />
         <Route path="/contact" element={<ContactPage />} />
 
         {/* Redirect all unknown routes to landing page */}
