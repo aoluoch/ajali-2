@@ -1,8 +1,12 @@
 from flask import Flask, request, session, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_restful import Api, Resource
 from flask_session import Session
 from flask_bcrypt import Bcrypt
-from models import db, User, IncidentReport
+from models.user import User
+from models.extensions import db
+from models.incident_report import IncidentReport
 import datetime
 
 app = Flask(__name__)
@@ -15,9 +19,12 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///ajali.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # Create tables if not already created
 with app.app_context():
