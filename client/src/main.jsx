@@ -9,11 +9,16 @@ import './i18n';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n'; // Import the i18n instance
 
+// Import the AuthProvider
+import { AuthProvider } from './authcontext'; // Make sure the path is correct
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {/* Wrap the App component with I18nextProvider */}
+    {/* Wrap the App component with I18nextProvider and AuthProvider */}
     <I18nextProvider i18n={i18n}>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </I18nextProvider>
   </StrictMode>
 );

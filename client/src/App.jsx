@@ -9,6 +9,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Admin from './components/Admin'; 
 import ContactPage from './pages/ContactPage';
+import ProtectedRoute from './components/ProtectedRoute'; // Import the ProtectedRoute
 
 function App() {
   return (
@@ -19,11 +20,46 @@ function App() {
         
         {/* Layout wrapper for protected routes */}
         <Route element={<Layout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/create-incident" element={<CreateIncident />} />
-          <Route path="/profile" element={<MyProfile />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route 
+            path="/home" 
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/create-incident" 
+            element={
+              <ProtectedRoute>
+                <CreateIncident />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <MyProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/notifications" 
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } 
+          />
         </Route>
 
         {/* Public routes */}

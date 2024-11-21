@@ -1,31 +1,28 @@
-import { useEffect } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-//import { useDispatch, useSelector } from 'react-redux';
-//import { checkAuthStatus } from '../store/slices/authSlice';
+import { useAuth } from '../authcontext'; // Import the useAuth hook
 import LoadingSpinner from './LoadingSpinner';
-import PropTypes from 'prop-types'; // Added import for PropTypes
+import PropTypes from 'prop-types'; // Import PropTypes
 
 const ProtectedRoute = ({ children }) => {
-  const dispatch = useDispatch();
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading } = useAuth(); // Destructure from useAuth
 
-  useEffect(() => {
-    dispatch(checkAuthStatus());
-  }, [dispatch]);
-
+  // Show a loading spinner if the loading state is true
   if (loading) {
     return <LoadingSpinner />;
   }
 
+  // If the user is not authenticated, redirect to the login page
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
+  // If authenticated, render the children components
   return children;
 };
 
 ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired, // Added propTypes validation
+  children: PropTypes.node.isRequired, // PropTypes validation for children
 };
 
 export default ProtectedRoute;

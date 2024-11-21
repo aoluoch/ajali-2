@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Mail, Lock, LogIn, UserCircle, ArrowLeft } from 'lucide-react';
 import Button from '../components/Button';
+import { useAuth } from '../authcontext'; // Import the useAuth hook
 
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -11,8 +12,9 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);  // Local loading state
   const [error, setError] = useState(null);  // Local error state
-  
+
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get the login function from context
 
   // Function to handle API call for registration
   const handleRegister = async () => {
@@ -30,7 +32,6 @@ const Login = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
-      
 
       // Assuming registration was successful, navigate to login page
       setIsRegistering(false);
@@ -57,17 +58,11 @@ const Login = () => {
         throw new Error(data.message || 'Login failed');
       }
 
-      //Assuming the backend returns user data and token
+      // Assuming the backend returns user data and token
       const { token, user } = data;
 
-      //Store the token and user data in localStorage
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(user));  // Store user data in localStorage
-      //Assuming the backend returns user data and token
-    // const { token, user } = data;
-
-    // localStorage.setItem('user', JSON.stringify(user));  // Store user data in localStorage
-    // localStorage.setItem('userId', user.id); // Store user ID in localStorage
+      // Use the login function from context to set authentication state
+      login(token, user); // Assuming login function takes token and user
 
       // Navigate to the profile page after login
       navigate('/profile');
@@ -142,7 +137,7 @@ const Login = () => {
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     required
                   />
-                  <UserCircle className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                  <User Circle className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
                 </div>
               </div>
             )}
