@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, session, make_response
-from flask_restful import Api, Resource
+from flask_restful import Api, Resource,  request
 from flask_migrate import Migrate
 from flask_cors import CORS
 from models.extensions import db
@@ -9,7 +9,7 @@ from models.incident_image import IncidentImage
 from models.incident_video import IncidentVideo
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # Create Flask app and API
 app = Flask(__name__)
@@ -26,6 +26,18 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=1)  # Session lasts 1 
 # Initialize the database
 db.init_app(app)
 migrate = Migrate(app, db)
+
+import cloudinary
+import cloudinary.uploader
+from cloudinary.utils import cloudinary_url
+
+# Configuration       
+cloudinary.config( 
+    cloud_name = "dgrwpafhr", 
+    api_key = "516167738643672", 
+    api_secret = "jq7eAUrHb1OqN0qZ7PidhfTpf9o", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
 
 
 # ---------------- Session Helper Functions ----------------
@@ -83,6 +95,14 @@ class UserRegisterResource(Resource):
             db.session.rollback()
             return {'message': f'Error creating user: {str(e)}'}, 500
 
+class UserById(Resource):
+    def get(self,id):
+        user = User.query.get(id)
+        if user:
+            return make_response(user.to_dict(), 200)
+        return make_response({"message":"user doesn't exist"}, 400)
+
+
 class UserLoginResource(Resource):
     def post(self):
         data = request.get_json()
@@ -112,47 +132,69 @@ class UserLogoutResource(Resource):
 
 # ---------------- Incident Resources ----------------
 class IncidentListResource(Resource):
-    @login_required
     def get(self):
         incidents = IncidentReport.query.all()
         return jsonify([incident.to_dict() for incident in incidents])
 
     @login_required
     def post(self):
-        data = request.get_json()
-
-        # Validate required fields
-        required_fields = ['description', 'latitude', 'longitude']
-        for field in required_fields:
-            if field not in data:
-                return {'message': f'{field} is required'}, 400
-
-        # Create new incident
-        new_incident = IncidentReport(
-            title=data['title'],
-            description=data['description'],
-            incident_type=data['incidentType'],  # Assuming `incident_type` is a valid column
-            latitude=data['latitude'],
-            longitude=data['longitude'],
-            media=",".join(data['media']),  # Store media URLs as a comma-separated string
-            user_id=session.get('user_id')  # Use user_id from session
-        )
-        
         try:
+
+            auth_header = request.headers.get('Authorization')
+            if not auth_header:
+                return {'message': 'User is not authenticated. Please log in.'}, 401
+            user_id = auth_header.split(" ")[1]
+            # Ensure user_id is present in session
+            user_id = session.get('user_id')
+            if not user_id:
+                return {'message': 'User is not authenticated. Please log in.'}, 401
+
+            # Access form data
+            description = request.form.get('description')
+            latitude = request.form.get('latitude')
+            longitude = request.form.get('longitude')
+            images = request.files.getlist('images')  # Get uploaded images
+            videos = request.files.getlist('videos')  # Get uploaded videos
+
+            # Create new incident
+            new_incident = IncidentReport(
+                user_id=user_id,
+                description=description,
+                latitude=latitude,
+                longitude=longitude,
+                status='under investigation', 
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+
+            # Upload images to Cloudinary and associate with the new incident
+            for image in images:
+                upload_result = cloudinary.uploader.upload(image)  # Upload image to Cloudinary
+                new_image = IncidentImage(report_id=new_incident.id, image_url=upload_result['secure_url'])
+                db.session.add(new_image)
+
+            # Upload videos to Cloudinary and associate with the new incident
+            for video in videos:
+                upload_result = cloudinary.uploader.upload(video, resource_type="video")  # Upload video to Cloudinary
+                new_video = IncidentVideo(report_id=new_incident.id, video_url=upload_result['secure_url'])
+                db.session.add(new_video)
+
+            # Save the new incident and associated images/videos to the database
             db.session.add(new_incident)
             db.session.commit()
-            return {'message': 'Incident created successfully'}, 201
+            return {'message': 'Incident created successfully, images and videos uploaded to Cloudinary.'}, 201
+
         except Exception as e:
             db.session.rollback()
             return {'message': f'Error creating incident: {str(e)}'}, 500
 
 class IncidentResource(Resource):
-    @login_required
+
     def get(self, id):
         incident = IncidentReport.query.get_or_404(id)
         return jsonify(incident.to_dict())
 
-    @login_required
+
     def put(self, id):
         incident = IncidentReport.query.get_or_404(id)
 
@@ -168,7 +210,6 @@ class IncidentResource(Resource):
         db.session.commit()
         return jsonify(incident.to_dict())
 
-    @login_required
     def delete(self, id):
         incident = IncidentReport.query.get_or_404(id)
 
@@ -195,7 +236,6 @@ class IncidentResource(Resource):
 
 # ------------------------- Incident Image & Video Resources -------------------------
 class IncidentImageResource(Resource):
-    @login_required
     def post(self, incident_id):
         data = request.get_json()
         new_image = IncidentImage(report_id=incident_id, image_url=data['image_url'])
@@ -203,13 +243,11 @@ class IncidentImageResource(Resource):
         db.session.commit()
         return make_response({"message": "Image posted"}, 201)
 
-    @login_required
     def get(self, incident_id):
         incident = IncidentReport.query.get_or_404(incident_id)
         return jsonify([image.to_dict() for image in incident.images])
 
 class IncidentImageSingleResource(Resource):
-    @login_required
     def delete(self, incident_id, image_id):
         image = IncidentImage.query.filter_by(report_id=incident_id, id=image_id).first_or_404()
         report = IncidentReport.query.get(image.report_id)
@@ -223,7 +261,6 @@ class IncidentImageSingleResource(Resource):
         return make_response({"message": "Incident image deleted"}, 204)
 
 class IncidentVideoResource(Resource):
-    @login_required
     def post(self, incident_id):
         data = request.get_json()
         new_video = IncidentVideo(report_id=incident_id, video_url=data['video_url'])
@@ -231,13 +268,11 @@ class IncidentVideoResource(Resource):
         db.session.commit()
         return make_response({"message": "Incident video posted"}, 201)
 
-    @login_required
     def get(self, incident_id):
         incident = IncidentReport.query.get_or_404(incident_id)
         return jsonify([video.to_dict() for video in incident.videos])
 
 class IncidentVideoSingleResource(Resource):
-    @login_required
     def delete(self, incident_id, video_id):
         video = IncidentVideo.query.filter_by(report_id=incident_id, id=video_id).first_or_404()
         report = IncidentReport.query.get(video.report_id)
@@ -251,6 +286,7 @@ class IncidentVideoSingleResource(Resource):
 
 # ------------------------- API Routes Setup -------------------------
 api.add_resource(UserRegisterResource, '/users')
+api.add_resource(UserById, '/user/<int:id>')
 api.add_resource(UserLoginResource, '/login')
 api.add_resource(UserLogoutResource, '/logout')
 api.add_resource(IncidentListResource, '/incidents')

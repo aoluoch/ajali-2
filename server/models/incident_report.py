@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from sqlalchemy_serializer import SerializerMixin
 from models.extensions import db
 
@@ -14,8 +14,8 @@ class IncidentReport(db.Model, SerializerMixin):
     status = db.Column(db.String(50), default='under investigation')  # Options: 'under investigation', 'resolved', 'rejected'
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now())
+    updated_at = db.Column(db.DateTime, onupdate=datetime.now())
 
     # Relationship to User with back-populate
     user = db.relationship('User', back_populates='reports')
