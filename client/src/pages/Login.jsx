@@ -56,8 +56,7 @@ const Login = () => {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Assuming login was successful, store the token and user_id in localStorage
-      localStorage.setItem('authToken', data.token);  // Store token in localStorage
+      // Assuming login was successful, store the token and user_id in localStorage// Store token in localStorage
       localStorage.setItem('user_id', data.user_id);  // Store user_id in localStorage
 
       // Navigate to the profile page after login

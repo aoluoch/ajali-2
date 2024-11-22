@@ -9,16 +9,18 @@ const AppContextProvider = (props) => {
         fetch (`http://127.0.0.1:5000/user/${user_id}`)
         .then((resp) => resp.json())
         .then((data) => setUserData(data))
+        console.log(userData)
     }, [user_id])
 
     const value = {
         userData, setUserData
     }
+    
 
 
 
     return (
-        <AppContext.Provider value={{value}}>
+        <AppContext.Provider value={value}>
             {props.children}
         </AppContext.Provider>
     )

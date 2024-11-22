@@ -10,6 +10,7 @@ from models.incident_video import IncidentVideo
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import timedelta, datetime
+import os
 
 # Create Flask app and API
 app = Flask(__name__)
@@ -41,18 +42,18 @@ cloudinary.config(
 
 
 # ---------------- Session Helper Functions ----------------
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if app.config.get('TESTING'):
-            return f(*args, **kwargs)  # Bypass session validation for testing mode
+# def login_required(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         if app.config.get('TESTING'):
+#             return f(*args, **kwargs)  # Bypass session validation for testing mode
 
-        # Check if the user is logged in
-        if 'user_id' not in session:
-            return {'message': 'User not logged in'}, 401
+#         # Check if the user is logged in
+#         if 'user_id' not in session:
+#             return {'message': 'User not logged in'}, 401
 
-        return f(*args, **kwargs)
-    return decorated
+#         return f(*args, **kwargs)
+#     return decorated
 
 class CheckSession(Resource):
     def get(self):
@@ -95,14 +96,6 @@ class UserRegisterResource(Resource):
             db.session.rollback()
             return {'message': f'Error creating user: {str(e)}'}, 500
 
-class UserById(Resource):
-    def get(self,id):
-        user = User.query.get(id)
-        if user:
-            return make_response(user.to_dict(), 200)
-        return make_response({"message":"user doesn't exist"}, 400)
-
-
 class UserLoginResource(Resource):
     def post(self):
         data = request.get_json()
@@ -136,14 +129,10 @@ class IncidentListResource(Resource):
         incidents = IncidentReport.query.all()
         return jsonify([incident.to_dict() for incident in incidents])
 
-    @login_required
+
     def post(self):
         try:
-
-            auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                return {'message': 'User is not authenticated. Please log in.'}, 401
-            user_id = auth_header.split(" ")[1]
+            
             # Ensure user_id is present in session
             user_id = session.get('user_id')
             if not user_id:
@@ -286,7 +275,6 @@ class IncidentVideoSingleResource(Resource):
 
 # ------------------------- API Routes Setup -------------------------
 api.add_resource(UserRegisterResource, '/users')
-api.add_resource(UserById, '/user/<int:id>')
 api.add_resource(UserLoginResource, '/login')
 api.add_resource(UserLogoutResource, '/logout')
 api.add_resource(IncidentListResource, '/incidents')
@@ -297,4 +285,5 @@ api.add_resource(IncidentVideoResource, '/incidents/<int:incident_id>/videos')
 api.add_resource(IncidentVideoSingleResource, '/incidents/<int:incident_id>/videos/<int:video_id>')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5555))
+    app.run(host="0.0.0.0", port=port, debug=True)
