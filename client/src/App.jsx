@@ -11,6 +11,7 @@ import ContactPage from './pages/ContactPage';
 import LandingPage from './pages/LandingPage';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
+import IncidentDetails from './pages/IncidentDetails';
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<><Navbar /><ContactPage /></>} />
         <Route path="/" element={<LandingPage />} exact />
-        
+
         {/* Protected routes */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<HomePage />} />
@@ -29,6 +30,7 @@ function App() {
           <Route path="/manage-incidents" element={<ManageIncidents />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/incident-details/:id" element={<IncidentDetails />} />
         </Route>
       </Routes>
     </Router>

@@ -20,19 +20,19 @@ def create_incident():
     try:
         current_user_id = get_jwt_identity()
         data = request.form.to_dict()
-        
+
         # Validate required fields
         required_fields = ['description', 'latitude', 'longitude']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
             return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
-            
+
         try:
             latitude = float(data['latitude'])
             longitude = float(data['longitude'])
         except ValueError:
             return jsonify({"error": "Invalid coordinates format"}), 400
-            
+
         # Create incident report
         incident = IncidentReport(
             user_id=current_user_id,
@@ -42,7 +42,7 @@ def create_incident():
         )
         db.session.add(incident)
         db.session.flush()  # Get the incident ID without committing
-        
+
         # Handle image uploads
         if 'images' in request.files:
             images = request.files.getlist('images')
@@ -57,7 +57,7 @@ def create_incident():
                         db.session.add(incident_image)
                     except Exception as e:
                         return jsonify({"error": f"Failed to upload image: {str(e)}"}), 400
-        
+
         # Handle video uploads
         if 'videos' in request.files:
             videos = request.files.getlist('videos')
@@ -72,10 +72,10 @@ def create_incident():
                         db.session.add(incident_video)
                     except Exception as e:
                         return jsonify({"error": f"Failed to upload video: {str(e)}"}), 400
-        
+
         db.session.commit()
         return jsonify(incident.to_dict()), 201
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"Failed to create incident: {str(e)}"}), 400
@@ -87,13 +87,13 @@ def update_incident(incident_id):
     try:
         current_user = get_current_user()
         incident = IncidentReport.query.get_or_404(incident_id)
-        
+
         # Verify ownership or admin status
         if incident.user_id != current_user.id and not current_user.is_admin:
             return jsonify({"error": "Unauthorized"}), 403
-            
+
         data = request.get_json()
-        
+
         # Update allowed fields
         if 'description' in data:
             incident.description = data['description']
@@ -101,10 +101,10 @@ def update_incident(incident_id):
             incident.latitude = data['latitude']
         if 'longitude' in data:
             incident.longitude = data['longitude']
-            
+
         db.session.commit()
         return jsonify(incident.to_dict())
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -116,27 +116,27 @@ def delete_incident(incident_id):
     try:
         current_user = get_current_user()
         incident = IncidentReport.query.get_or_404(incident_id)
-        
+
         # Verify ownership or admin status
         if incident.user_id != current_user.id and not current_user.is_admin:
             return jsonify({"error": "Unauthorized"}), 403
-            
+
         # Delete associated media from Cloudinary and database
         for image in incident.images:
             public_id = image.image_url.split('/')[-1].split('.')[0]
             delete_file_from_cloudinary(public_id, "image")
             db.session.delete(image)
-            
+
         for video in incident.videos:
             public_id = video.video_url.split('/')[-1].split('.')[0]
             delete_file_from_cloudinary(public_id, "video")
             db.session.delete(video)
-            
+
         db.session.delete(incident)
         db.session.commit()
-        
+
         return jsonify({"message": "Incident deleted successfully"})
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
@@ -152,6 +152,32 @@ def get_incidents():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+@incidents.route('/incidents/<int:incident_id>', methods=['GET'])
+@jwt_required()
+def get_incident(incident_id):
+    """Get a single incident by ID"""
+    try:
+        incident = IncidentReport.query.get_or_404(incident_id)
+
+        # Get the incident with its related images and videos
+        incident_data = incident.to_dict()
+
+        # Add images if any
+        if hasattr(incident, 'images') and incident.images:
+            incident_data['images'] = [img.to_dict() for img in incident.images]
+
+        # Add videos if any
+        if hasattr(incident, 'videos') and incident.videos:
+            incident_data['videos'] = [vid.to_dict() for vid in incident.videos]
+
+        # Add username of reporter if available
+        if hasattr(incident, 'user') and incident.user:
+            incident_data['username'] = incident.user.username
+
+        return jsonify(incident_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 @incidents.route('/admin/incidents/<int:incident_id>/status', methods=['PUT'])
 @jwt_required()
 def update_incident_status(incident_id):
@@ -163,16 +189,16 @@ def update_incident_status(incident_id):
 
         data = request.get_json()
         status = data.get('status')
-        
+
         if status not in ['under investigation', 'rejected', 'resolved']:
             return jsonify({"error": "Invalid status"}), 400
-            
+
         incident = IncidentReport.query.get_or_404(incident_id)
         incident.status = status
         db.session.commit()
-        
+
         return jsonify(incident.to_dict())
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400

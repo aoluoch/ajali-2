@@ -62,9 +62,9 @@ function HomePage() {
         </div>
 
         {/* Recent Incidents */}
-        <div className="bg-white p-4 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Recent Incidents</h2>
-          <RecentIncidents incidents={incidents.slice(0, 5)} />
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold mb-6">Recent Incidents</h2>
+          <RecentIncidents />
         </div>
 
         {/* Statistics */}
