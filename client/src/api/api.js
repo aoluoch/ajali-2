@@ -13,12 +13,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Don't set Content-Type for FormData, let the browser handle it
     if (!(config.data instanceof FormData)) {
       config.headers['Content-Type'] = 'application/json';
     }
-    
+
     return config;
   },
   (error) => {
@@ -33,7 +33,15 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Handle unauthorized access
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem('user');
+
+      // Only redirect to login if we're not already on a public route
+      const publicRoutes = ['/', '/login', '/contact'];
+      const currentPath = window.location.pathname;
+
+      if (!publicRoutes.includes(currentPath)) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

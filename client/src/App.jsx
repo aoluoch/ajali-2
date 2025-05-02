@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import HomePage from './pages/HomePage';
@@ -17,7 +18,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
-        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/contact" element={<><Navbar /><ContactPage /></>} />
         <Route path="/" element={<LandingPage />} exact />
         
         {/* Protected routes */}

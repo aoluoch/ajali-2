@@ -32,6 +32,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    // Always navigate to the home page after logout
     navigate('/', { replace: true });
   };
 

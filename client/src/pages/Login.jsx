@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Mail, Lock, LogIn, UserCircle, ArrowLeft } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,10 +11,15 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  
+
   const dispatch = useDispatch();
-  const { error } = useSelector((state) => state.auth);
+  const { error, isAuthenticated, isLoading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +32,6 @@ const Login = () => {
       }
       navigate('/dashboard');
     } catch (err) {
-      // Error is handled by Redux
       console.error('Authentication failed:', err);
     }
   };
@@ -39,6 +43,10 @@ const Login = () => {
         <Link
           to="/"
           className="inline-flex items-center text-primary-600 hover:text-primary-700 transition-colors"
+          onClick={() => {
+            // Clear any potential redirect state when going back to home
+            localStorage.removeItem('intendedPath');
+          }}
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Home
@@ -53,7 +61,7 @@ const Login = () => {
           <div className="flex justify-center mb-6">
             <AlertTriangle className="h-12 w-12 text-primary-600" />
           </div>
-          
+
           <h2 className="text-center text-3xl font-bold text-gray-900 mb-8">
             {isRegistering ? 'Create Account' : 'Sign in to Ajali!'}
           </h2>
