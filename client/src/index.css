@@ -5,6 +5,17 @@
 @import "~slick-carousel/slick/slick.css";
 @import "~slick-carousel/slick/slick-theme.css"; */
 
+/* Apply Poppins font to the entire website */
+@layer base {
+  html {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
 /* Fix for Leaflet controls z-index */
 .leaflet-top,
 .leaflet-bottom {
