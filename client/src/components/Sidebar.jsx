@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, PlusCircle, User, Bell, Settings, List, X } from 'lucide-react';
 import PropTypes from 'prop-types';
 
-function Sidebar({ onClose }) {
+function Sidebar({ onClose = () => {} }) {
   const location = useLocation();
   
   const navigation = [
@@ -56,10 +56,6 @@ function Sidebar({ onClose }) {
 
 Sidebar.propTypes = {
   onClose: PropTypes.func,
-};
-
-Sidebar.defaultProps = {
-  onClose: () => {},
 };
 
 export default Sidebar;

@@ -46,10 +46,22 @@ function CreateIncident() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate required fields
+    if (!description.trim()) {
+      dispatch({ type: 'incidents/setError', payload: 'Description is required' });
+      return;
+    }
+
+    // Validate coordinates
+    if (position[0] === 0 && position[1] === 0) {
+      dispatch({ type: 'incidents/setError', payload: 'Please select a location on the map' });
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('description', description);
-    formData.append('latitude', position[0]);
-    formData.append('longitude', position[1]);
+    formData.append('latitude', position[0].toString());
+    formData.append('longitude', position[1].toString());
     
     images.forEach((image) => {
       formData.append('images', image);

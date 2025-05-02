@@ -21,12 +21,24 @@ def create_incident():
         current_user_id = get_jwt_identity()
         data = request.form.to_dict()
         
+        # Validate required fields
+        required_fields = ['description', 'latitude', 'longitude']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+            
+        try:
+            latitude = float(data['latitude'])
+            longitude = float(data['longitude'])
+        except ValueError:
+            return jsonify({"error": "Invalid coordinates format"}), 400
+            
         # Create incident report
         incident = IncidentReport(
             user_id=current_user_id,
             description=data['description'],
-            latitude=float(data['latitude']),
-            longitude=float(data['longitude'])
+            latitude=latitude,
+            longitude=longitude
         )
         db.session.add(incident)
         db.session.flush()  # Get the incident ID without committing
@@ -36,31 +48,37 @@ def create_incident():
             images = request.files.getlist('images')
             for image in images:
                 if image:
-                    upload_result = upload_file_to_cloudinary(image, resource_type="image")
-                    incident_image = IncidentImage(
-                        report_id=incident.id,
-                        image_url=upload_result['url']
-                    )
-                    db.session.add(incident_image)
+                    try:
+                        upload_result = upload_file_to_cloudinary(image, resource_type="image")
+                        incident_image = IncidentImage(
+                            report_id=incident.id,
+                            image_url=upload_result['url']
+                        )
+                        db.session.add(incident_image)
+                    except Exception as e:
+                        return jsonify({"error": f"Failed to upload image: {str(e)}"}), 400
         
         # Handle video uploads
         if 'videos' in request.files:
             videos = request.files.getlist('videos')
             for video in videos:
                 if video:
-                    upload_result = upload_file_to_cloudinary(video, resource_type="video")
-                    incident_video = IncidentVideo(
-                        report_id=incident.id,
-                        video_url=upload_result['url']
-                    )
-                    db.session.add(incident_video)
+                    try:
+                        upload_result = upload_file_to_cloudinary(video, resource_type="video")
+                        incident_video = IncidentVideo(
+                            report_id=incident.id,
+                            video_url=upload_result['url']
+                        )
+                        db.session.add(incident_video)
+                    except Exception as e:
+                        return jsonify({"error": f"Failed to upload video: {str(e)}"}), 400
         
         db.session.commit()
         return jsonify(incident.to_dict()), 201
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": f"Failed to create incident: {str(e)}"}), 400
 
 @incidents.route('/incidents/<int:incident_id>', methods=['PUT'])
 @jwt_required()

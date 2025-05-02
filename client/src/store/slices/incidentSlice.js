@@ -24,7 +24,7 @@ export const createIncident = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create incident');
+      return rejectWithValue(error.response?.data?.error || 'Failed to create incident');
     }
   }
 );

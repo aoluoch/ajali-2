@@ -7,6 +7,7 @@ export const login = createAsyncThunk(
     try {
       const response = await api.post('/login', credentials);
       localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -20,6 +21,7 @@ export const register = createAsyncThunk(
     try {
       const response = await api.post('/register', userData);
       localStorage.setItem('token', response.data.access_token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
@@ -33,22 +35,25 @@ export const checkAuthStatus = createAsyncThunk(
     try {
       // Check if token exists
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No token found');
+      const storedUser = localStorage.getItem('user');
+      
+      if (!token || !storedUser) {
+        throw new Error('No token or user data found');
       }
       
       // Verify token by making a request to a protected endpoint
-      const response = await api.get('/incidents');
-      return response.data;
+      await api.get('/incidents');
+      return { user: JSON.parse(storedUser) };
     } catch (error) {
-      localStorage.removeItem('token'); // Clear invalid token
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       return rejectWithValue('Authentication failed');
     }
   }
 );
 
 const initialState = {
-  user: null,
+  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
   token: localStorage.getItem('token'),
   loading: false,
   error: null,
@@ -61,6 +66,7 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
@@ -103,9 +109,10 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(checkAuthStatus.fulfilled, (state) => {
+      .addCase(checkAuthStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
+        state.user = action.payload.user;
       })
       .addCase(checkAuthStatus.rejected, (state) => {
         state.loading = false;
