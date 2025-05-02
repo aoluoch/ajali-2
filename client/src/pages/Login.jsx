@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Mail, Lock, LogIn, UserCircle, ArrowLeft } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, register } from '../store/slices/authSlice';
 import Button from '../components/Button';
 
 const Login = () => {
@@ -9,74 +11,25 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [loading, setLoading] = useState(false);  // Local loading state
-  const [error, setError] = useState(null);  // Local error state
   
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-
-  // Function to handle API call for registration
-  const handleRegister = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:5000/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      // Assuming registration was successful, navigate to login page
-      setIsRegistering(false);
-      navigate('/login');
-    } catch (error) {
-      setError(error.message || 'An error occurred during registration');
-    }
-  };
-
-  // Function to handle API call for login
-  const handleLogin = async () => {
-    try {
-      const response = await fetch('http://127.0.0.1:5000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      // Assuming login was successful, store the token or session data
-      localStorage.setItem('authToken', data.token);  // Store token in localStorage (or sessionStorage)
-
-      // Navigate to the profile page after login
-      navigate('/profile');
-    } catch (error) {
-      setError(error.message || 'An error occurred during login');
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);  // Start loading
 
-    if (isRegistering) {
-      await handleRegister();
-    } else {
-      await handleLogin();
+    try {
+      if (isRegistering) {
+        await dispatch(register({ username, email, password })).unwrap();
+      } else {
+        await dispatch(login({ email, password })).unwrap();
+      }
+      navigate('/dashboard');
+    } catch (err) {
+      // Error is handled by Redux
+      console.error('Authentication failed:', err);
     }
-
-    setLoading(false);  // Stop loading
   };
 
   return (

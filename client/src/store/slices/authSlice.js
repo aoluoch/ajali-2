@@ -1,61 +1,120 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../api/api';
+
+export const login = createAsyncThunk(
+  'auth/login',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/login', credentials);
+      localStorage.setItem('token', response.data.access_token);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Login failed');
+    }
+  }
+);
+
+export const register = createAsyncThunk(
+  'auth/register',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/register', userData);
+      localStorage.setItem('token', response.data.access_token);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+    }
+  }
+);
+
+export const checkAuthStatus = createAsyncThunk(
+  'auth/checkStatus',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Check if token exists
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+      
+      // Verify token by making a request to a protected endpoint
+      const response = await api.get('/incidents');
+      return response.data;
+    } catch (error) {
+      localStorage.removeItem('token'); // Clear invalid token
+      return rejectWithValue('Authentication failed');
+    }
+  }
+);
 
 const initialState = {
-  isAuthenticated: false,
   user: null,
-  loading: true,
-  error: null
+  token: localStorage.getItem('token'),
+  loading: false,
+  error: null,
+  isAuthenticated: !!localStorage.getItem('token'),
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setAuth: (state, action) => {
-      state.isAuthenticated = action.payload.isAuthenticated;
-      state.user = action.payload.user;
-      state.loading = false;
-    },
-    setLoading: (state, action) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action) => {
-      state.error = action.payload;
-      state.loading = false;
-    },
     logout: (state) => {
-      state.isAuthenticated = false;
+      localStorage.removeItem('token');
       state.user = null;
-      state.loading = false;
+      state.token = null;
+      state.isAuthenticated = false;
+    },
+    clearError: (state) => {
       state.error = null;
-    }
-  }
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.access_token;
+        state.isAuthenticated = true;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.access_token;
+        state.isAuthenticated = true;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkAuthStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuthStatus.fulfilled, (state) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+      })
+      .addCase(checkAuthStatus.rejected, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+      });
+  },
 });
 
-export const { setAuth, setLoading, setError, logout } = authSlice.actions;
-
-export const checkAuthStatus = () => async (dispatch) => {
-  try {
-    dispatch(setLoading(true));
-    const response = await fetch('/api/check-auth', {
-      credentials: 'include'
-    });
-    const data = await response.json();
-    
-    if (response.ok) {
-      dispatch(setAuth({
-        isAuthenticated: true,
-        user: data.user
-      }));
-    } else {
-      dispatch(setAuth({
-        isAuthenticated: false,
-        user: null
-      }));
-    }
-  } catch (error) {
-    dispatch(setError('Failed to check authentication status'));
-  }
-};
-
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

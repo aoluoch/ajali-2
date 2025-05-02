@@ -20,7 +20,13 @@ load_dotenv()
 def create_app():
     # Create Flask app and API
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:5173"],  # Vite default dev server port
+            "methods": ["GET", "POST", "PUT", "DELETE"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     api = Api(app)
 
     # Load configuration settings

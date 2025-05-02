@@ -1,9 +1,15 @@
-import { Link } from 'react-router-dom';
-import { AlertTriangle, Menu, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AlertTriangle, Menu, X, LogOut } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import Button from './Button';
+import { logout } from '../store/slices/authSlice';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const navItems = [
     { label: 'Home', path: '/', type: 'route' },
@@ -23,7 +29,11 @@ const Navbar = () => {
     setIsOpen(false);
   };
 
-  // Close mobile menu when route changes
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
   useEffect(() => {
     setIsOpen(false);
   }, []);
@@ -54,6 +64,29 @@ const Navbar = () => {
     );
   };
 
+  const renderAuthButtons = () => {
+    if (isAuthenticated) {
+      return (
+        <Button
+          onClick={handleLogout}
+          variant="danger"
+          className="flex items-center"
+        >
+          <LogOut className="h-5 w-5 mr-2" />
+          Logout
+        </Button>
+      );
+    }
+    return (
+      <Link
+        to="/login"
+        className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+      >
+        Sign In
+      </Link>
+    );
+  };
+
   return (
     <nav className="bg-white shadow-md fixed w-full z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,12 +101,7 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map(renderNavLink)}
-            <Link
-              to="/login"
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              Sign In
-            </Link>
+            {renderAuthButtons()}
           </div>
 
           {/* Mobile menu button */}
@@ -113,13 +141,24 @@ const Navbar = () => {
                 </a>
               )
             ))}
-            <Link
-              to="/login"
-              className="block px-3 py-2 rounded-md text-base font-medium bg-primary-600 text-white hover:bg-primary-700"
-              onClick={() => setIsOpen(false)}
-            >
-              Sign In
-            </Link>
+            {isAuthenticated ? (
+              <Button
+                onClick={handleLogout}
+                variant="danger"
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium"
+              >
+                <LogOut className="h-5 w-5 mr-2" />
+                Logout
+              </Button>
+            ) : (
+              <Link
+                to="/login"
+                className="block px-3 py-2 rounded-md text-base font-medium bg-primary-600 text-white hover:bg-primary-700"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}
