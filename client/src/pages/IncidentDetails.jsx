@@ -222,7 +222,7 @@ const IncidentDetails = () => {
 
             <div>
               <h2 className="text-lg font-semibold mb-4">Location</h2>
-              <div className="h-[300px] rounded-lg overflow-hidden">
+              <div className="h-[300px] rounded-lg overflow-hidden relative z-0">
                 <MapContainer
                   center={[currentIncident.latitude, currentIncident.longitude]}
                   zoom={13}

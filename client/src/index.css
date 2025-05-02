@@ -4,3 +4,9 @@
 /* Slick Carousel Styles
 @import "~slick-carousel/slick/slick.css";
 @import "~slick-carousel/slick/slick-theme.css"; */
+
+/* Fix for Leaflet controls z-index */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 10 !important; /* Lower than navbar (z-50) */
+}
