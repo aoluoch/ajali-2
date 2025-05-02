@@ -39,19 +39,26 @@ export const checkAuthStatus = createAsyncThunk(
     try {
       const token = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
-      
-      if (!token || !storedUser) {
-        throw new Error('No token or user data found');
+
+      if (!token || !storedUser || storedUser === "undefined") {
+        throw new Error('No token or valid user data found');
       }
-      
+
+      let user;
+      try {
+        user = JSON.parse(storedUser);
+      } catch (parseError) {
+        throw new Error('Invalid user data format');
+      }
+
       // Verify token is valid by making a request
       await api.get('/incidents');
-      return { user: JSON.parse(storedUser), token };
+      return { user, token };
     } catch (error) {
       // Clear invalid auth data
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      return rejectWithValue('Authentication failed');
+      return rejectWithValue('Authentication failed: ' + error.message);
     }
   }
 );
@@ -59,11 +66,24 @@ export const checkAuthStatus = createAsyncThunk(
 const loadInitialState = () => {
   const token = localStorage.getItem('token');
   const storedUser = localStorage.getItem('user');
+
+  let user = null;
+  try {
+    // Only attempt to parse if storedUser exists and is not "undefined"
+    if (storedUser && storedUser !== "undefined") {
+      user = JSON.parse(storedUser);
+    }
+  } catch (error) {
+    // If parsing fails, clear the invalid data
+    console.error("Failed to parse user data from localStorage:", error);
+    localStorage.removeItem('user');
+  }
+
   return {
-    user: storedUser ? JSON.parse(storedUser) : null,
+    user,
     token: token || null,
     error: null,
-    isAuthenticated: !!token && !!storedUser,
+    isAuthenticated: !!token && !!user, // Only authenticate if we have both token and valid user
     isLoading: false
   };
 };
