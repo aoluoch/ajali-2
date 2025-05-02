@@ -8,34 +8,37 @@ import StatusBadge from '../components/StatusBadge';
 import Button from '../components/Button';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const IncidentDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { currentIncident, error } = useSelector((state) => state.incidents);
   const { user } = useSelector((state) => state.auth);
   const isLoading = useSelector((state) => state.incidents.loadingStates.fetchIncidentById);
   const deleteLoading = useSelector((state) => state.incidents.loadingStates.deleteIncident);
 
-  const handleDelete = async () => {
-    if (!showDeleteConfirm) {
-      setShowDeleteConfirm(true);
-      return;
-    }
+  const openDeleteDialog = () => {
+    setIsDeleteDialogOpen(true);
+  };
 
-    setIsDeleting(true);
+  const closeDeleteDialog = () => {
+    if (!deleteLoading) {
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDelete = async () => {
     try {
       await dispatch(deleteIncident(id)).unwrap();
       navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Failed to delete incident:', err);
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
+      closeDeleteDialog();
     }
   };
 
@@ -105,7 +108,7 @@ const IncidentDetails = () => {
         </Link>
       </div>
 
-      {(isDeleting || deleteLoading) && (
+      {deleteLoading && (
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -119,6 +122,18 @@ const IncidentDetails = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={closeDeleteDialog}
+        onConfirm={handleDelete}
+        title="Delete Incident"
+        message="Are you sure you want to delete this incident? This action cannot be undone."
+        confirmText="Delete Incident"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        isLoading={deleteLoading}
+      />
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6 border-b">
@@ -177,45 +192,15 @@ const IncidentDetails = () => {
                     </Button>
                   </Link>
 
-                  {showDeleteConfirm ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="danger"
-                        onClick={handleDelete}
-                        disabled={isDeleting || deleteLoading}
-                        className="flex items-center"
-                      >
-                        {isDeleting || deleteLoading ? (
-                          <>
-                            <LoadingSpinner size="sm" className="mr-2" />
-                            Deleting...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Confirm Delete
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setShowDeleteConfirm(false)}
-                        disabled={isDeleting || deleteLoading}
-                        className="flex items-center"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="danger"
-                      onClick={handleDelete}
-                      className="flex items-center"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Incident
-                    </Button>
-                  )}
+                  <Button
+                    variant="danger"
+                    onClick={openDeleteDialog}
+                    className="flex items-center"
+                    disabled={deleteLoading}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Incident
+                  </Button>
                 </div>
               )}
             </div>
