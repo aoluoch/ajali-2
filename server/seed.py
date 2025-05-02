@@ -3,69 +3,74 @@ from models.user import User
 from models.incident_report import IncidentReport
 from models.incident_image import IncidentImage
 from models.incident_video import IncidentVideo
+from werkzeug.security import generate_password_hash
 
-predefined_users = [
-    {"username": "user1", "email": "user1@example.com", "password_hash": "hash1"},
-    {"username": "user2", "email": "user2@example.com", "password_hash": "hash2"},
-    {"username": "user3", "email": "user3@example.com", "password_hash": "hash3"},
-    {"username": "user4", "email": "user4@example.com", "password_hash": "hash4"},
-    {"username": "user5", "email": "user5@example.com", "password_hash": "hash5"},
-    {"username": "user6", "email": "user6@example.com", "password_hash": "hash6"},
-    {"username": "user7", "email": "user7@example.com", "password_hash": "hash7"},
-    {"username": "user8", "email": "user8@example.com", "password_hash": "hash8"},
-    {"username": "user9", "email": "user9@example.com", "password_hash": "hash9"},
-    {"username": "user10", "email": "user10@example.com", "password_hash": "hash10"}
-]
+# Admin user details
+admin_user = {
+    "username": "admin",
+    "email": "admin@gmail.com",
+    "password": "123456",
+    "is_admin": True
+}
 
-predefined_incidents = [
-    {"description": "Incident 1", "status": "under investigation", "latitude": -1.286389, "longitude": 36.817223},
-    {"description": "Incident 2", "status": "resolved", "latitude": -1.2833, "longitude": 36.8167},
-    {"description": "Incident 3", "status": "under investigation", "latitude": -1.2901, "longitude": 36.8219},
-    {"description": "Incident 4", "status": "rejected", "latitude": -1.2876, "longitude": 36.8148},
-    {"description": "Incident 5", "status": "resolved", "latitude": -1.2890, "longitude": 36.8103},
-    {"description": "Incident 6", "status": "under investigation", "latitude": -1.2850, "longitude": 36.8197},
-    {"description": "Incident 7", "status": "rejected", "latitude": -1.2849, "longitude": 36.8139},
-    {"description": "Incident 8", "status": "resolved", "latitude": -1.2828, "longitude": 36.8106},
-    {"description": "Incident 9", "status": "under investigation", "latitude": -1.2835, "longitude": 36.8200},
-    {"description": "Incident 10", "status": "rejected", "latitude": -1.2870, "longitude": 36.8165}
+# Sample incidents for testing
+sample_incidents = [
+    {"description": "Traffic accident on Main Street", "status": "under investigation", "latitude": -1.286389, "longitude": 36.817223},
+    {"description": "Flooding in Downtown area", "status": "resolved", "latitude": -1.2833, "longitude": 36.8167},
+    {"description": "Power outage in Westlands", "status": "under investigation", "latitude": -1.2901, "longitude": 36.8219},
+    {"description": "Road damage after heavy rain", "status": "under investigation", "latitude": -1.2876, "longitude": 36.8148},
+    {"description": "Building collapse on Moi Avenue", "status": "under investigation", "latitude": -1.2890, "longitude": 36.8103}
 ]
 
 def seed_data():
     with app.app_context():
-        for user_data in predefined_users:
-            existing_user = User.query.filter_by(email=user_data["email"]).first()
-            if existing_user:
-                print(f"User {user_data['username']} already exists, skipping...")
-                continue
-            user = User(
-                username=user_data["username"],
-                email=user_data["email"],
-                password_hash=user_data["password_hash"],
-            )
-            db.session.add(user)
-            db.session.commit()
-            print(f"User '{user.username}' created successfully!")
+        # Clear existing data
+        print("Clearing existing data...")
+        IncidentImage.query.delete()
+        IncidentVideo.query.delete()
+        IncidentReport.query.delete()
+        User.query.delete()
+        db.session.commit()
+        print("Database cleared.")
 
-        users = User.query.all()
-        for i, incident_data in enumerate(predefined_incidents):
-            user = users[i % len(users)]
-            existing_incident = IncidentReport.query.filter_by(description=incident_data["description"]).first()
-            if existing_incident:
-                print(f"Incident '{incident_data['description']}' already exists, skipping...")
-                continue
+        # Create admin user
+        existing_admin = User.query.filter_by(email=admin_user["email"]).first()
+        if existing_admin:
+            print(f"Admin user with email {admin_user['email']} already exists, updating...")
+            existing_admin.username = admin_user["username"]
+            existing_admin.password_hash = generate_password_hash(admin_user["password"])
+            existing_admin.is_admin = True
+            db.session.commit()
+            admin = existing_admin
+        else:
+            print(f"Creating new admin user with email {admin_user['email']}...")
+            admin = User(
+                username=admin_user["username"],
+                email=admin_user["email"],
+                password_hash=generate_password_hash(admin_user["password"]),
+                is_admin=True
+            )
+            db.session.add(admin)
+            db.session.commit()
+
+        print(f"Admin user '{admin.username}' created/updated successfully!")
+
+        # Create sample incidents
+        for i, incident_data in enumerate(sample_incidents):
             incident = IncidentReport(
                 description=incident_data["description"],
                 status=incident_data["status"],
                 latitude=incident_data["latitude"],
                 longitude=incident_data["longitude"],
-                user_id=user.id
+                user_id=admin.id
             )
             db.session.add(incident)
             db.session.commit()
-            print(f"Incident '{incident.description}' created for user '{user.username}'!")
+            print(f"Incident '{incident.description}' created for admin user!")
 
-            image_url = f"http://example.com/image_{i+1}.jpg"
-            video_url = f"http://example.com/video_{i+1}.mp4"
+            # Add sample image and video
+            image_url = f"https://via.placeholder.com/800x600.png?text=Incident+{i+1}+Image"
+            video_url = f"https://example.com/sample_video_{i+1}.mp4"
 
             image = IncidentImage(report_id=incident.id, image_url=image_url)
             video = IncidentVideo(report_id=incident.id, video_url=video_url)
