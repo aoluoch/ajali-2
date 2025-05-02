@@ -9,7 +9,7 @@ import ErrorMessage from '../components/ErrorMessage';
 
 function ManageIncidents() {
   const dispatch = useDispatch();
-  const { incidents, loading, error } = useSelector((state) => state.incidents);
+  const { incidents, error } = useSelector((state) => state.incidents);
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
@@ -38,7 +38,6 @@ function ManageIncidents() {
     }
   };
 
-  if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
 
   return (

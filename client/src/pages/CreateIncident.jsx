@@ -20,7 +20,7 @@ function LocationPicker({ setPosition }) {
 function CreateIncident() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state) => state.incidents);
+  const { loadingStates, error } = useSelector((state) => state.incidents);
 
   const [description, setDescription] = useState('');
   const [position, setPosition] = useState([0, 0]);
@@ -75,6 +75,7 @@ function CreateIncident() {
       await dispatch(createIncident(formData)).unwrap();
       navigate('/manage-incidents');
     } catch (err) {
+      // Error is handled by the reducer
       console.error('Failed to create incident:', err);
     }
   };
@@ -160,10 +161,10 @@ function CreateIncident() {
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loadingStates.createIncident}
           className="w-full sm:w-auto"
         >
-          {loading ? <LoadingSpinner /> : 'Submit Report'}
+          {loadingStates.createIncident ? <LoadingSpinner /> : 'Submit Report'}
         </Button>
       </form>
     </div>

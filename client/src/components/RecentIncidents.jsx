@@ -1,35 +1,47 @@
 import { motion } from 'framer-motion';
-import { MapPin, Clock, AlertCircle } from 'lucide-react';
+import { MapPin, Clock, AlertCircle, Edit2, Trash2 } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchIncidents, deleteIncident } from '../store/slices/incidentSlice';
+import { Link } from 'react-router-dom';
 import Button from './Button.jsx';
+import StatusBadge from './StatusBadge';
+import LoadingSpinner from './LoadingSpinner';
 
 const RecentIncidents = () => {
-  // Mock data - in real app, fetch from API
-  const incidents = [
-    {
-      id: 1,
-      title: "Traffic Accident on Uhuru Highway",
-      location: "Nairobi CBD",
-      time: "2 hours ago",
-      type: "Accident",
-      severity: "high"
-    },
-    {
-      id: 2,
-      title: "Fire Outbreak at Industrial Area",
-      location: "Industrial Area",
-      time: "5 hours ago",
-      type: "Fire",
-      severity: "high"
-    },
-    {
-      id: 3,
-      title: "Power Line Down",
-      location: "Westlands",
-      time: "1 day ago",
-      type: "Infrastructure",
-      severity: "medium"
+  const dispatch = useDispatch();
+  const { incidents } = useSelector((state) => state.incidents);
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(fetchIncidents());
+  }, [dispatch]);
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this incident?')) {
+      try {
+        await dispatch(deleteIncident(id)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete incident:', error);
+      }
     }
-  ];
+  };
+
+  // Sort incidents by date (most recent first) and take the first 6
+  const recentIncidents = [...incidents]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 6);
+
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  };
 
   return (
     <section id="incidents" className="py-8 sm:py-12 md:py-16 bg-gradient-to-b from-white to-gray-50">
@@ -47,7 +59,7 @@ const RecentIncidents = () => {
         </motion.div>
 
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {incidents.map((incident, index) => (
+          {recentIncidents.map((incident, index) => (
             <motion.div
               key={incident.id}
               initial={{ opacity: 0, y: 20 }}
@@ -57,49 +69,71 @@ const RecentIncidents = () => {
               className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col"
             >
               <div className="p-4 sm:p-6 flex-grow">
-                <div className={`inline-block px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4 ${
-                  incident.severity === 'high' 
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {incident.type}
+                <div className="flex justify-between items-start mb-3">
+                  <StatusBadge status={incident.status} />
+                  {(user?.id === incident.user_id || user?.is_admin) && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDelete(incident.id)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        title="Delete incident"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      {user?.id === incident.user_id && (
+                        <Link
+                          to={`/edit-incident/${incident.id}`}
+                          className="p-1 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                          title="Edit incident"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Link>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                  {incident.title}
+                  {incident.description}
                 </h3>
                 <div className="space-y-2 text-xs sm:text-sm text-gray-600">
                   <div className="flex items-center">
                     <MapPin className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
-                    <span className="truncate">{incident.location}</span>
+                    <span className="truncate">
+                      {`${incident.latitude.toFixed(6)}, ${incident.longitude.toFixed(6)}`}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
-                    <span>{incident.time}</span>
+                    <span>{formatTimeAgo(incident.created_at)}</span>
                   </div>
                 </div>
               </div>
               <div className="p-4 sm:p-6 pt-0 sm:pt-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-xs sm:text-sm"
-                >
-                  View Details
-                </Button>
+                <Link to={`/incident/${incident.id}`}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs sm:text-sm"
+                  >
+                    View Details
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           ))}
         </div>
 
         <div className="text-center mt-8 sm:mt-12">
-          <Button
-            variant="primary"
-            size="lg"
-            className="inline-flex items-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
-          >
-            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-            View All Incidents
-          </Button>
+          <Link to="/manage-incidents">
+            <Button
+              variant="primary"
+              size="lg"
+              className="inline-flex items-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
+            >
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              View All Incidents
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

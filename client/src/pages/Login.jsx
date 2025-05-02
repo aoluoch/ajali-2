@@ -13,7 +13,7 @@ const Login = () => {
   const [username, setUsername] = useState('');
   
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -125,13 +125,12 @@ const Login = () => {
             <div>
               <Button
                 type="submit"
-                disabled={loading}
                 variant="primary"
                 size="lg"
                 className="w-full"
               >
                 <LogIn className="h-5 w-5 mr-2" />
-                {loading ? 'Please wait...' : isRegistering ? 'Create Account' : 'Sign in'}
+                {isRegistering ? 'Create Account' : 'Sign in'}
               </Button>
             </div>
           </motion.form>

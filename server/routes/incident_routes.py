@@ -144,13 +144,10 @@ def delete_incident(incident_id):
 @incidents.route('/incidents', methods=['GET'])
 @jwt_required()
 def get_incidents():
-    """Get all incidents for the current user or all incidents for admin"""
+    """Get all incidents while preserving edit/delete permissions"""
     try:
-        current_user = get_current_user()
-        if current_user.is_admin:
-            incidents = IncidentReport.query.all()
-        else:
-            incidents = IncidentReport.query.filter_by(user_id=current_user.id).all()
+        # Get all incidents regardless of user
+        incidents = IncidentReport.query.all()
         return jsonify([incident.to_dict() for incident in incidents])
     except Exception as e:
         return jsonify({"error": str(e)}), 400

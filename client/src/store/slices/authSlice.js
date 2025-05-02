@@ -33,7 +33,6 @@ export const checkAuthStatus = createAsyncThunk(
   'auth/checkStatus',
   async (_, { rejectWithValue }) => {
     try {
-      // Check if token exists
       const token = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
       
@@ -41,7 +40,6 @@ export const checkAuthStatus = createAsyncThunk(
         throw new Error('No token or user data found');
       }
       
-      // Verify token by making a request to a protected endpoint
       await api.get('/incidents');
       return { user: JSON.parse(storedUser) };
     } catch (error) {
@@ -55,7 +53,6 @@ export const checkAuthStatus = createAsyncThunk(
 const initialState = {
   user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
   token: localStorage.getItem('token'),
-  loading: false,
   error: null,
   isAuthenticated: !!localStorage.getItem('token'),
 };
@@ -70,6 +67,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
+      state.error = null;
     },
     clearError: (state) => {
       state.error = null;
@@ -77,48 +75,36 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(login.fulfilled, (state, action) => {
-        state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.access_token;
         state.isAuthenticated = true;
+        state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
-      })
-      .addCase(register.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.isAuthenticated = false;
       })
       .addCase(register.fulfilled, (state, action) => {
-        state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.access_token;
         state.isAuthenticated = true;
-      })
-      .addCase(register.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(checkAuthStatus.pending, (state) => {
-        state.loading = true;
         state.error = null;
       })
+      .addCase(register.rejected, (state, action) => {
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
       .addCase(checkAuthStatus.fulfilled, (state, action) => {
-        state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
+        state.error = null;
       })
       .addCase(checkAuthStatus.rejected, (state) => {
-        state.loading = false;
         state.isAuthenticated = false;
         state.user = null;
         state.token = null;
+        state.error = null;
       });
   },
 });

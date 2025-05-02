@@ -9,14 +9,13 @@ import StatusBadge from '../components/StatusBadge';
 
 function HomePage() {
   const dispatch = useDispatch();
-  const { incidents, loading, error } = useSelector((state) => state.incidents);
+  const { incidents, error } = useSelector((state) => state.incidents);
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(fetchIncidents());
   }, [dispatch]);
 
-  if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
 
   return (

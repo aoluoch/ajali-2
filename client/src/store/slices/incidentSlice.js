@@ -55,8 +55,13 @@ export const deleteIncident = createAsyncThunk(
 
 const initialState = {
   incidents: [],
-  loading: false,
   error: null,
+  loadingStates: {
+    fetchIncidents: false,
+    createIncident: false,
+    updateStatus: false,
+    deleteIncident: false
+  }
 };
 
 const incidentSlice = createSlice({
@@ -69,56 +74,64 @@ const incidentSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Fetch incidents
       .addCase(fetchIncidents.pending, (state) => {
-        state.loading = true;
+        state.loadingStates.fetchIncidents = true;
         state.error = null;
       })
       .addCase(fetchIncidents.fulfilled, (state, action) => {
-        state.loading = false;
         state.incidents = action.payload;
+        state.loadingStates.fetchIncidents = false;
+        state.error = null;
       })
       .addCase(fetchIncidents.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
+        state.loadingStates.fetchIncidents = false;
       })
+      // Create incident
       .addCase(createIncident.pending, (state) => {
-        state.loading = true;
+        state.loadingStates.createIncident = true;
         state.error = null;
       })
       .addCase(createIncident.fulfilled, (state, action) => {
-        state.loading = false;
         state.incidents.push(action.payload);
+        state.loadingStates.createIncident = false;
+        state.error = null;
       })
       .addCase(createIncident.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
+        state.loadingStates.createIncident = false;
       })
+      // Update incident status
       .addCase(updateIncidentStatus.pending, (state) => {
-        state.loading = true;
+        state.loadingStates.updateStatus = true;
         state.error = null;
       })
       .addCase(updateIncidentStatus.fulfilled, (state, action) => {
-        state.loading = false;
         const index = state.incidents.findIndex((i) => i.id === action.payload.id);
         if (index !== -1) {
           state.incidents[index] = action.payload;
         }
+        state.loadingStates.updateStatus = false;
+        state.error = null;
       })
       .addCase(updateIncidentStatus.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
+        state.loadingStates.updateStatus = false;
       })
+      // Delete incident
       .addCase(deleteIncident.pending, (state) => {
-        state.loading = true;
+        state.loadingStates.deleteIncident = true;
         state.error = null;
       })
       .addCase(deleteIncident.fulfilled, (state, action) => {
-        state.loading = false;
         state.incidents = state.incidents.filter((i) => i.id !== action.payload);
+        state.loadingStates.deleteIncident = false;
+        state.error = null;
       })
       .addCase(deleteIncident.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
+        state.loadingStates.deleteIncident = false;
       });
   },
 });
