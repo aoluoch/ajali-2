@@ -1,39 +1,29 @@
-import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
-const StatusBadge = ({ status }) => {
-  const getStatusConfig = () => {
-    switch (status.toLowerCase()) {
-      case 'resolved':
-        return {
-          icon: <CheckCircle className="h-4 w-4" />,
-          classes: 'bg-green-100 text-green-800'
-        };
+function StatusBadge({ status }) {
+  const getStatusStyles = () => {
+    switch (status) {
       case 'under investigation':
-        return {
-          icon: <Clock className="h-4 w-4" />,
-          classes: 'bg-yellow-100 text-yellow-800'
-        };
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'resolved':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
-        return {
-          icon: <AlertTriangle className="h-4 w-4" />,
-          classes: 'bg-red-100 text-red-800'
-        };
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const { icon, classes } = getStatusConfig();
-
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${classes}`}>
-      {icon}
-      <span className="ml-1">{status}</span>
+    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusStyles()}`}>
+      {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
-};
+}
 
 StatusBadge.propTypes = {
-  status: PropTypes.string.isRequired,
+  status: PropTypes.oneOf(['under investigation', 'resolved', 'rejected']).isRequired,
 };
 
 export default StatusBadge;
