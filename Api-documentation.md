@@ -1,193 +1,307 @@
-Ajali API Documentation
-Overview
-This API provides functionality for Ajali’s incident reporting system, allowing users to
-create, update, view, and delete incidents. The API also allows users to upload associated
-images and videos for each incident report. User authentication and authorization are managed
-using sessions. The API is built using Flask and Flask-RESTful.
-Base URL
-http://localhost:5000
-Available Endpoints
-1. User Registration
-Endpoint: POST /users
-Description: Registers a new user by creating an account with a username, email, and
-password.
-Parameters:
-username (string, required): The username for the new user.
-email (string, required): The email address of the user.
-password (string, required): The password for the new user.
-is_admin (boolean, optional): Indicates if the user has admin privileges. Defaults to
-False.
-Response:
-Success (201): { "message": "User created successfully" }
-Error (400): { "message": "Field is required" } if any required fields are missing.
-Error (500): { "message": "Error creating user: <details>" } if an internal error occurs.
-Example Request:
+# Ajali API Documentation
+
+## Base Information
+
+- Base URL: `http://localhost:5000`
+- Content-Type: `application/json`
+- Authentication: Session-based
+
+## Authentication
+
+### Response Status Codes
+
+| Status | Description |
+|--------|------------|
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 500 | Server Error |
+
+## Endpoints
+
+### 🔐 Authentication
+
+#### Register User
+```http
+POST /users
+```
+
+**Request Body:**
+```json
 {
-"username": "johndoe",
-"email": "johndoe@example.com",
-"password": "mypassword123"
+  "username": "string",
+  "email": "string",
+  "password": "string",
+  "is_admin": "boolean" (optional)
 }
-Example Response:
+```
+
+**Success Response (201):**
+```json
 {
-"message": "User created successfully"
+  "message": "User created successfully",
+  "user_id": "integer"
 }
-2. User Login
-Endpoint: POST /login
-Description: Authenticates a user and starts a session for subsequent requests.
-Parameters:
-username (string, required): The username of the user.
-password (string, required): The password of the user.
-Response:
-Success (200): { "message": "Login successful", "is_admin": <boolean> }
-Error (401): { "message": "Invalid username or password" }
-Example Request:
+```
+
+#### Login
+```http
+POST /login
+```
+
+**Request Body:**
+```json
 {
-"username": "johndoe",
-"password": "mypassword123"
+  "username": "string",
+  "password": "string"
 }
-Example Response:
+```
+
+**Success Response (200):**
+```json
 {
-"message": "Login successful",
-"is_admin": false
+  "message": "Login successful",
+  "is_admin": "boolean",
+  "token": "string"
 }
-3. User Logout
-Endpoint: POST /logout
-Description: Logs the user out by clearing their session.
-Response:
-Success (200): { "message": "Logged out successfully" }
-Error (401): { "message": "Session not found or invalid" }
-Example Request:
+```
+
+#### Logout
+```http
 POST /logout
-Example Response:
+```
+
+**Success Response (200):**
+```json
 {
-"message": "Logged out successfully"
+  "message": "Logged out successfully"
 }
-4. List Incidents
-Endpoint: GET /incidents
-Description: Fetches a list of all incidents reported in the system.
-Session Required: Yes
-Response:
-Success (200): Returns a list of incidents with their details.
-Error (401): { "message": "Session expired or invalid" }
-Example Response:
-[
+```
+
+### 🚨 Incidents
+
+#### List All Incidents
+```http
+GET /incidents
+```
+
+**Query Parameters:**
+- `page` (integer, optional): Page number for pagination
+- `per_page` (integer, optional): Items per page
+- `status` (string, optional): Filter by status
+- `user_id` (integer, optional): Filter by user
+
+**Success Response (200):**
+```json
 {
-"id": 1,
-"description": "Car accident on highway",
-"status": "under investigation",
-"latitude": "-1.2921",
-"longitude": "36.8219",
-"user_id": 3
-},
-{
-"id": 2,
-"description": "Fire at the shopping mall",
-"status": "resolved",
-"latitude": "-1.2921",
-"longitude": "36.8219",
-"user_id": 2
+  "incidents": [
+    {
+      "id": "integer",
+      "description": "string",
+      "status": "string",
+      "latitude": "string",
+      "longitude": "string",
+      "user_id": "integer",
+      "created_at": "string",
+      "updated_at": "string",
+      "images": ["string"],
+      "videos": ["string"]
+    }
+  ],
+  "pagination": {
+    "current_page": "integer",
+    "total_pages": "integer",
+    "total_items": "integer"
+  }
 }
-]
-5. Create Incident
-Endpoint: POST /incidents
-Description: Creates a new incident report.
-Session Required: Yes
-Parameters:
-description (string, required): A brief description of the incident.
-latitude (string, required): The latitude of the incident location.
-longitude (string, required): The longitude of the incident location.
-status (string, optional): The status of the incident (default is "under investigation").
-Response:
-Success (201): { "message": "Incident created successfully" }
-Error (400): { "message": "Field is required" } if any required fields are missing.
-Error (500): { "message": "Error creating incident: <details>" } if an internal error occurs.
-Example Request:
+```
+
+#### Get Single Incident
+```http
+GET /incidents/{id}
+```
+
+**Success Response (200):**
+```json
 {
-"description": "A robbery took place",
-"latitude": "-1.2921",
-"longitude": "36.8219"
+  "id": "integer",
+  "description": "string",
+  "status": "string",
+  "latitude": "string",
+  "longitude": "string",
+  "user_id": "integer",
+  "created_at": "string",
+  "updated_at": "string",
+  "images": ["string"],
+  "videos": ["string"]
 }
-Example Response:
+```
+
+#### Create Incident
+```http
+POST /incidents
+```
+
+**Request Body:**
+```json
 {
-"message": "Incident created successfully"
+  "description": "string",
+  "latitude": "string",
+  "longitude": "string",
+  "status": "string" (optional)
 }
-6. Get Single Incident
-Endpoint: GET /incidents/<id>
-Description: Fetches the details of a single incident by its ID.
-Response:
-Success (200): Returns the details of the specified incident.
-Error (404): { "message": "Incident not found" }
-Example Response:
+```
+
+**Success Response (201):**
+```json
 {
-"id": 1,
-"description": "Car accident on highway",
-"status": "under investigation",
-"latitude": "-1.2921",
-"longitude": "36.8219",
-"user_id": 3
+  "message": "Incident created successfully",
+  "incident_id": "integer"
 }
-7. Update Incident
-Endpoint: PUT /incidents/<id>
-Description: Updates the details of an incident. Only the user who reported the incident
-can modify it. Admin users can also modify the status.
-Session Required: Yes
-Parameters:
-description (string, optional): Updated description.
-status (string, optional, admin only): Updated status of the incident.
-latitude (string, optional): Updated latitude.
-longitude (string, optional): Updated longitude.
-Response:
-Success (200): Returns the updated incident details.
-Error (403): { "message": "Permission denied" } if the user does not have permission to
-update
-Example Request:
+```
+
+#### Update Incident
+```http
+PUT /incidents/{id}
+```
+
+**Request Body:**
+```json
 {
-"description": "Updated description"
+  "description": "string" (optional),
+  "status": "string" (optional),
+  "latitude": "string" (optional),
+  "longitude": "string" (optional)
 }
-Example Response:
+```
+
+**Success Response (200):**
+```json
 {
-"id": 1,
-"description": "Updated description",
-"status": "under investigation",
-"latitude": "-1.2921",
-"longitude": "36.8219",
-"user_id": 3
+  "message": "Incident updated successfully",
+  "incident": {
+    "id": "integer",
+    "description": "string",
+    "status": "string",
+    "latitude": "string",
+    "longitude": "string",
+    "updated_at": "string"
+  }
 }
-8. Delete Incident
-Endpoint: DELETE /incidents/<id>
-Description: Deletes an incident and all associated images and videos. Only the user
-who reported the incident or an admin can delete it.
-Session Required: Yes
-Response:
-Success (204): No content is returned on success.
-Error (403): { "message": "Permission denied" } if the user does not have permission
-to delete.
-Example Request:
-DELETE /incidents/1
-Example Response:
+```
+
+#### Delete Incident
+```http
+DELETE /incidents/{id}
+```
+
+**Success Response (204):**
+No content
+
+### 📸 Media
+
+#### Add Image to Incident
+```http
+POST /incidents/{incident_id}/images
+```
+
+**Request Body:**
+```json
 {
-"message": "Incident report and associated media deleted"
+  "image_url": "string"
 }
-9. Add Incident Image
-Endpoint: POST /incidents/<incident_id>/images
-Description: Uploads an image related to a specific incident.
-Session Required: Yes
-Parameters:
-image_url (string, required): The URL of the image to be uploaded.
-Response:
-Success (201): { "message": "Image posted" }
-Example Request:
+```
+
+**Success Response (201):**
+```json
 {
-"image_url": "https://example.com/image.jpg"
+  "message": "Image added successfully",
+  "image_id": "integer"
 }
-Authentication/Authorization
-Authentication is managed through sessions. After logging in, the server creates a
-session, which is then used for subsequent requests. Each request that requires
-authentication should include the necessary session cookie or header to identify the
-user.
-Error Codes
-400 Bad Request: The request is missing required parameters or has invalid input.
-401 Unauthorized: Invalid or missing session. User must log in again.
-403 Forbidden: The user does not have the required permissions to perform the action.
-404 Not Found: The requested resource does not exist.
-500 Internal Server Error: An unexpected error occurred on the server.
+```
+
+#### Add Video to Incident
+```http
+POST /incidents/{incident_id}/videos
+```
+
+**Request Body:**
+```json
+{
+  "video_url": "string"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "Video added successfully",
+  "video_id": "integer"
+}
+```
+
+## Error Responses
+
+### Bad Request (400)
+```json
+{
+  "message": "Field is required",
+  "errors": {
+    "field_name": ["error message"]
+  }
+}
+```
+
+### Unauthorized (401)
+```json
+{
+  "message": "Invalid credentials or session expired"
+}
+```
+
+### Forbidden (403)
+```json
+{
+  "message": "Permission denied"
+}
+```
+
+### Not Found (404)
+```json
+{
+  "message": "Resource not found"
+}
+```
+
+### Server Error (500)
+```json
+{
+  "message": "Internal server error",
+  "error": "Error details" (only in development)
+}
+```
+
+## Status Values
+
+Incidents can have the following status values:
+- `pending` - Initial state when incident is created
+- `under_investigation` - Being reviewed by authorities
+- `resolved` - Incident has been handled
+- `closed` - No further action needed
+- `rejected` - Invalid or duplicate report
+
+## Rate Limiting
+
+- 100 requests per minute per IP address
+- 1000 requests per hour per user
+
+## Changelog
+
+### v1.0.0 (2025-05-03)
+- Initial API release
+- Basic CRUD operations for incidents
+- User authentication
+- Media upload support

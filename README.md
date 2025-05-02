@@ -1,198 +1,133 @@
-🌟 Ajali! - Emergency Alert Platform 🚨
+# Ajali! - Emergency Alert Platform 🚨
 
-Ajali! is a web application designed to empower citizens to report accidents and emergencies instantly. This platform is built for real-time incident reporting, making it easier to track and manage emergencies with rich media, geolocation, and real-time updates.
-🌈 Table of Contents
+## Overview
 
-    📝 Project Overview
-    💻 Frontend Features & Components
-    🔙 Backend Features & Components
-    🛠️ Technologies Used
-    ⚡ Installation Instructions
-    📡 API Endpoints
-    🧪 Testing
-    🙌 Contributing
-    📄 License
-    🙏 Acknowledgements
+Ajali! is a modern web application that enables real-time emergency and accident reporting. Built with React and Flask, it provides a robust platform for citizens to report incidents instantly with features like geolocation, media uploads, and real-time status tracking.
 
-📝 Project Overview
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.0-green.svg)](https://flask.palletsprojects.com/)
+[![Python](https://img.shields.io/badge/Python-3.8+-yellow.svg)](https://www.python.org/)
 
-Ajali! is an emergency alert platform designed to help users report accidents and emergencies instantly. The application allows users to create, manage, and view incident reports with images, videos, geolocation, and real-time status updates.
-💻 Frontend Features & Components
+## ✨ Key Features
 
-The frontend of the Ajali! project provides an interactive, user-friendly interface for reporting and managing incidents.
-🧩 Key Components
+- 🔄 Real-time incident reporting and tracking
+- 📍 Precise geolocation integration
+- 🖼️ Image and video upload support
+- 🔐 Secure user authentication
+- 📱 Responsive design for all devices
+- 🗺️ Interactive map visualization
+- 👥 Role-based access control (Admin/User)
+- 📊 Real-time status updates
 
-    Landing Page
-        Navbar 🧭
-        Hero Section 💥
-        Features Section 🌟
-        How It Works 📘
-        Footer 🦶
+## 🛠️ Tech Stack
 
-    Home Page
-        User Dashboard 👤
-        Incident Overview 📈
-        Map Section 🗺️
-        Searchbar and Filter Options 🔍
+### Frontend
+- React 18+ with Vite
+- Tailwind CSS for styling
+- React Router for navigation
+- Redux Toolkit for state management
+- OpenStreetMap & React-Leaflet for maps
 
-    Create New Incident Page
-        Incident Form ✍️
-        Attachments Section 📸
-        Geolocation Input 📍
-        Submit Button 📝
+### Backend
+- Flask framework
+- PostgreSQL database
+- SQLAlchemy ORM
+- Flask-Login for authentication
+- Cloudinary for media storage
 
-    My Profile Page
-        Personal Info Display 🏷️
-        Incident Management ⚙️
+## 🚀 Getting Started
 
-    Admin Dashboard
-        Incident List 📋
-        Update Incident Status ✅❌
-        Notification Settings 🔔
+### Prerequisites
+- Node.js 16+
+- Python 3.8+
+- PostgreSQL
+- pip and npm
 
-    Login/Signup Page
-        Authentication Form 🔐
-        Forgot Password Link 💬
+### Frontend Setup
+```bash
+# Navigate to client directory
+cd client
 
-🚀 Highlighted Features
-
-    Real-Time Incident Reporting: Users can report accidents and emergencies in real-time. ⏱️
-    Geolocation: Attach location data or manually enter latitude/longitude. 📍
-    Media Support: Upload images 📸 and videos 🎥 to enhance incident reports.
-    Personalized Dashboard: After logging in, users see a dashboard with their incident status and updates. 🖥️
-    Map Integration: Incidents are displayed on a map with pins marking locations. 🌍
-    Admin Panel: Admins can approve, reject, or resolve incidents and manage notifications. 🧑‍💻
-    Profile Management: Users can view and edit their personal information and incident history. 🏷️
-
-🔙 Backend Features & Components
-
-The backend of Ajali! is built using Flask (Python) to handle user authentication, incident report management, and API endpoints for the frontend.
-🔧 Highlighted Features
-
-    User Authentication: Handles registration, login, and session-based authentication. 🔐
-    Incident Report Management: Create, edit, and delete incident reports. ✏️🗑️
-    Geolocation Support: Record latitude and longitude for each incident. 📍
-    Media Support: Upload images and videos to enhance reports. 🎥📸
-    Admin Functionalities: Admins can approve, resolve, and reject incidents. ✅❌
-    Pagination: API responses support pagination for large datasets. 🔢
-
-🛠️ Technologies Used
-🎨 Frontend
-
-    React ⚛️: Component-based framework for building interactive UIs.
-    Vite ⚡: Lightning-fast build tool for development.
-    Tailwind CSS 🧵: Utility-first CSS framework.
-    OpenStreetMap 🗺️: Open-source map provider for displaying locations.
-    React-Leaflet 🧭: For map integration.
-
-🖥️ Backend
-
-    Flask 🐍: Micro web framework for building RESTful APIs.
-    PostgreSQL 🗄️: Relational database for storing incidents and user profiles.
-    Flask-Login 🔐: Manages session-based authentication.
-    SQLAlchemy 🔗: ORM for database interaction.
-    Flask-Migrate 🛠️: For managing database migrations.
-
-⚡ Installation Instructions
-Frontend Installation
-
-    Clone the Frontend Repository
-
-git clone https://github.com/your-repo/ajali-frontend.git
-cd ajali-frontend
-
-Install Dependencies
-
+# Install dependencies
 npm install
 
-Start Development Server
+# Start development server
+npm run dev
+```
 
-    npm run dev
+### Backend Setup
+```bash
+# Navigate to server directory
+cd server
 
-    The frontend app will be available at http://localhost:3000.
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-Backend Installation
-
-    Clone the Backend Repository
-
-git clone https://github.com/aoluoch/ajali-2.git
-cd ajali-2
-
-Create Virtual Environment
-
-pipenv install
-pipenv shell
-
-Install Dependencies
-
+# Install dependencies
 pip install -r requirements.txt
 
-Set Up Database and Run Migrations
+# Set up environment variables
+cp .env.example .env  # Then edit .env with your credentials
 
-flask db init
-flask db migrate
+# Initialize database
 flask db upgrade
 
-Start the Backend Server
+# Start server
+flask run
+```
 
-    flask run
+## 📱 Application Structure
 
-    The backend API will be available at http://localhost:5000.
+### Frontend (/client)
+- `/src/components` - Reusable UI components
+- `/src/pages` - Main application views
+- `/src/api` - API integration
+- `/src/store` - Redux state management
+- `/src/styles` - Global styles and theme
 
-📡 API Endpoints
+### Backend (/server)
+- `/models` - Database models
+- `/routes` - API endpoints
+- `/config` - Configuration files
+- `/utils` - Helper utilities
+- `/migrations` - Database migrations
 
-    User Registration: POST /api/register 📝
-    User Login: POST /api/login 🔐
-    Create Incident Report: POST /api/reports 🚨
-    Edit Incident Report: PUT /api/reports/<report_id> ✏️
-    Delete Incident Report: DELETE /api/reports/<report_id> 🗑️
-    Get Incident Reports: GET /api/reports 📋
-    Admin Update Report Status: PATCH /api/reports/<report_id>/status ⚙️
+## 🔐 Environment Variables
 
-🧪 Testing
+### Frontend (.env)
+```
+VITE_API_URL=http://localhost:5000
+VITE_MAPBOX_TOKEN=your_mapbox_token
+```
 
-To run backend tests, use:
+### Backend (.env)
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/ajali
+SECRET_KEY=your_secret_key
+CLOUDINARY_URL=your_cloudinary_url
+```
 
-pytest
+## 🤝 Contributing
 
-Make sure your environment is properly set up before running tests. 🧑‍💻
-🙌 Contributing
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-We welcome contributions from the community! 🎉 To contribute, please follow these steps:
+## 📜 License
 
-    Fork the Repository 🔄
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-    Clone the Repository 🚀
+## 👥 Support
 
-git clone https://github.com/your-username/ajali-frontend.git
+For support, email support@ajali.com or join our Slack channel.
 
-Create a New Branch 🧑‍💻
+## ✨ Acknowledgements
 
-git checkout -b feature-name
-
-Make Your Changes ✍️
-
-Commit Your Changes 📝
-
-git commit -m "Description of the changes"
-
-Push to Your Fork ⬆️
-
-    git push origin feature-name
-
-    Create a Pull Request to merge your changes into the main repository. 🤝
-
-📄 License
-
-This project is licensed under the MIT License. See the LICENSE file for more information.
-🙏 Acknowledgements
-
-Special thanks to the developers and open-source communities whose tools and libraries helped make this project possible. 🚀
-
-Ajali! – Empowering citizens to report accidents and emergencies instantly, making our communities safer. 🌍💪
-Key Highlighting Techniques:
-
-    Bold for important or key terms.
-    Italics for emphasis.
-    🟢 Emoji for visual appeal and quick scanning.
-    Code blocks for commands and technical details.
+- [React](https://reactjs.org/)
+- [Flask](https://flask.palletsprojects.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [OpenStreetMap](https://www.openstreetmap.org/)
+- All our contributors and supporters
