@@ -6,6 +6,8 @@ import { fetchIncidents, deleteIncident } from '../store/slices/incidentSlice';
 import { Link } from 'react-router-dom';
 import Button from './Button.jsx';
 import StatusBadge from './StatusBadge';
+import Container from './Container';
+import Card from './Card';
 
 const RecentIncidents = () => {
   const dispatch = useDispatch();
@@ -49,16 +51,15 @@ const RecentIncidents = () => {
           <p className="text-gray-500">No incidents reported yet.</p>
         </div>
       ) : (
-        <div className="grid gap-6 grid-cols-1">
+        <div className="space-y-4">
           {recentIncidents.map((incident, index) => (
             <motion.div
               key={incident.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden"
             >
-              <div className="p-5 flex-grow">
+              <Card className="overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
                   <StatusBadge status={incident.status} />
                   {(user?.id === incident.user_id || user?.is_admin) && (
@@ -89,11 +90,11 @@ const RecentIncidents = () => {
                     : incident.description}
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2 text-primary-500 shrink-0" />
-                      <span>
+                      <span className="truncate">
                         {`${incident.latitude.toFixed(6)}, ${incident.longitude.toFixed(6)}`}
                       </span>
                     </div>
@@ -103,12 +104,12 @@ const RecentIncidents = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-end items-end">
+                  <div className="flex justify-start sm:justify-end items-center sm:items-end mt-4 sm:mt-0">
                     <Link to={`/incident-details/${incident.id}`}>
                       <Button
                         variant="primary"
                         size="sm"
-                        className="flex items-center"
+                        className="flex items-center w-full sm:w-auto"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         View Details
@@ -116,7 +117,7 @@ const RecentIncidents = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
+              </Card>
             </motion.div>
           ))}
         </div>
