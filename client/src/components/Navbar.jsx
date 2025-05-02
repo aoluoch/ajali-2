@@ -13,6 +13,7 @@ const Navbar = () => {
 
   const navItems = [
     { label: 'Home', path: '/', type: 'route' },
+    ...(isAuthenticated ? [{ label: 'Dashboard', path: '/dashboard', type: 'route' }] : []),
     { label: 'Recent Incidents', path: 'incidents', type: 'scroll' },
     { label: 'About', path: 'about', type: 'scroll' },
     { label: 'Contact', path: '/contact', type: 'route' }
