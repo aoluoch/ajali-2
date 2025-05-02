@@ -25,6 +25,18 @@ export const fetchIncidentById = createAsyncThunk(
   }
 );
 
+export const updateIncident = createAsyncThunk(
+  'incidents/updateIncident',
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/incidents/${id}`, data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update incident');
+    }
+  }
+);
+
 export const createIncident = createAsyncThunk(
   'incidents/createIncident',
   async (formData, { rejectWithValue }) => {
@@ -73,6 +85,7 @@ const initialState = {
     fetchIncidents: false,
     fetchIncidentById: false,
     createIncident: false,
+    updateIncident: false,
     updateStatus: false,
     deleteIncident: false
   }
@@ -131,6 +144,26 @@ const incidentSlice = createSlice({
       .addCase(createIncident.rejected, (state, action) => {
         state.error = action.payload;
         state.loadingStates.createIncident = false;
+      })
+      // Update incident
+      .addCase(updateIncident.pending, (state) => {
+        state.loadingStates.updateIncident = true;
+        state.error = null;
+      })
+      .addCase(updateIncident.fulfilled, (state, action) => {
+        const index = state.incidents.findIndex((i) => i.id === action.payload.id);
+        if (index !== -1) {
+          state.incidents[index] = action.payload;
+        }
+        if (state.currentIncident && state.currentIncident.id === action.payload.id) {
+          state.currentIncident = action.payload;
+        }
+        state.loadingStates.updateIncident = false;
+        state.error = null;
+      })
+      .addCase(updateIncident.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loadingStates.updateIncident = false;
       })
       // Update incident status
       .addCase(updateIncidentStatus.pending, (state) => {

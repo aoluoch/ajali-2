@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchIncidentById } from '../store/slices/incidentSlice';
-import { MapPin, Clock, User, ArrowLeft, Edit2, AlertTriangle } from 'lucide-react';
+import { fetchIncidentById, deleteIncident } from '../store/slices/incidentSlice';
+import { MapPin, Clock, User, ArrowLeft, Edit2, AlertTriangle, Trash2 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import StatusBadge from '../components/StatusBadge';
 import Button from '../components/Button';
@@ -13,10 +13,31 @@ const IncidentDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { currentIncident, error } = useSelector((state) => state.incidents);
   const { user } = useSelector((state) => state.auth);
   const isLoading = useSelector((state) => state.incidents.loadingStates.fetchIncidentById);
+  const deleteLoading = useSelector((state) => state.incidents.loadingStates.deleteIncident);
+
+  const handleDelete = async () => {
+    if (!showDeleteConfirm) {
+      setShowDeleteConfirm(true);
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await dispatch(deleteIncident(id)).unwrap();
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      console.error('Failed to delete incident:', err);
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchIncidentById(id));
@@ -62,9 +83,9 @@ const IncidentDetails = () => {
   }
 
   const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: 'long', 
+    const options = {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -84,6 +105,21 @@ const IncidentDetails = () => {
         </Link>
       </div>
 
+      {(isDeleting || deleteLoading) && (
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <LoadingSpinner size="sm" className="text-blue-500" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                Deleting incident... Please wait.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6 border-b">
           <div className="flex flex-wrap justify-between items-start gap-4 mb-4">
@@ -92,7 +128,7 @@ const IncidentDetails = () => {
             </h1>
             <StatusBadge status={currentIncident.status} size="lg" />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <h2 className="text-lg font-semibold mb-4">Details</h2>
@@ -101,7 +137,7 @@ const IncidentDetails = () => {
                   <h3 className="text-sm font-medium text-gray-500">Description</h3>
                   <p className="mt-1 text-gray-900">{currentIncident.description}</p>
                 </div>
-                
+
                 <div className="flex items-center">
                   <Clock className="h-5 w-5 text-primary-500 mr-2" />
                   <div>
@@ -109,7 +145,7 @@ const IncidentDetails = () => {
                     <p className="text-gray-900">{formatDate(currentIncident.created_at)}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <User className="h-5 w-5 text-primary-500 mr-2" />
                   <div>
@@ -117,7 +153,7 @@ const IncidentDetails = () => {
                     <p className="text-gray-900">{currentIncident.username || 'Anonymous'}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <MapPin className="h-5 w-5 text-primary-500 mr-2" />
                   <div>
@@ -128,9 +164,9 @@ const IncidentDetails = () => {
                   </div>
                 </div>
               </div>
-              
+
               {(user?.id === currentIncident.user_id || user?.is_admin) && (
-                <div className="mt-6">
+                <div className="mt-6 flex flex-wrap gap-3">
                   <Link to={`/edit-incident/${currentIncident.id}`}>
                     <Button
                       variant="secondary"
@@ -140,10 +176,50 @@ const IncidentDetails = () => {
                       Edit Incident
                     </Button>
                   </Link>
+
+                  {showDeleteConfirm ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="danger"
+                        onClick={handleDelete}
+                        disabled={isDeleting || deleteLoading}
+                        className="flex items-center"
+                      >
+                        {isDeleting || deleteLoading ? (
+                          <>
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Confirm Delete
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        disabled={isDeleting || deleteLoading}
+                        className="flex items-center"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="danger"
+                      onClick={handleDelete}
+                      className="flex items-center"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Incident
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
-            
+
             <div>
               <h2 className="text-lg font-semibold mb-4">Location</h2>
               <div className="h-[300px] rounded-lg overflow-hidden">
@@ -168,15 +244,15 @@ const IncidentDetails = () => {
               </div>
             </div>
           </div>
-          
+
           {currentIncident.images && currentIncident.images.length > 0 && (
             <div className="mt-8">
               <h2 className="text-lg font-semibold mb-4">Images</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {currentIncident.images.map((image, index) => (
                   <div key={index} className="rounded-lg overflow-hidden shadow-md">
-                    <img 
-                      src={image.image_url} 
+                    <img
+                      src={image.image_url}
                       alt={`Incident ${currentIncident.id} - Image ${index + 1}`}
                       className="w-full h-48 object-cover"
                     />
@@ -185,15 +261,15 @@ const IncidentDetails = () => {
               </div>
             </div>
           )}
-          
+
           {currentIncident.videos && currentIncident.videos.length > 0 && (
             <div className="mt-8">
               <h2 className="text-lg font-semibold mb-4">Videos</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentIncident.videos.map((video, index) => (
                   <div key={index} className="rounded-lg overflow-hidden shadow-md">
-                    <video 
-                      src={video.video_url} 
+                    <video
+                      src={video.video_url}
                       controls
                       className="w-full h-auto"
                     >

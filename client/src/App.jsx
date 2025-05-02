@@ -26,6 +26,7 @@ function App() {
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<HomePage />} />
           <Route path="/create-incident" element={<CreateIncident />} />
+          <Route path="/edit-incident/:id" element={<CreateIncident />} />
           <Route path="/profile" element={<MyProfile />} />
           <Route path="/manage-incidents" element={<ManageIncidents />} />
           <Route path="/notifications" element={<Notifications />} />
