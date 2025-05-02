@@ -34,7 +34,7 @@ function HomePage() {
         {/* Map View */}
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Incident Map</h2>
-          <div className="h-[400px] rounded-lg overflow-hidden">
+          <div className="h-[400px] rounded-lg overflow-hidden relative z-0">
             <MapContainer
               center={[0, 0]}
               zoom={2}

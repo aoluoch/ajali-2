@@ -68,8 +68,8 @@ function CreateIncident() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Report an Incident</h1>
+    <div className="max-w-4xl mx-auto p-2 sm:p-4">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4">Report an Incident</h1>
       
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
@@ -77,15 +77,16 @@ function CreateIncident() {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             rows="4"
+            placeholder="Describe the incident in detail..."
             required
           />
         </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-medium">Location (Click on map to set)</label>
-          <div className="h-[400px] w-full">
+          <div className="h-[250px] sm:h-[400px] w-full rounded-lg overflow-hidden border relative z-0">
             <MapContainer
               center={[0, 0]}
               zoom={2}
@@ -99,7 +100,7 @@ function CreateIncident() {
               {position && <Marker position={position} />}
             </MapContainer>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-xs sm:text-sm text-gray-600">
             Selected coordinates: {position[0].toFixed(6)}, {position[1].toFixed(6)}
           </div>
         </div>
@@ -111,16 +112,16 @@ function CreateIncident() {
             accept="image/*"
             multiple
             onChange={handleImageChange}
-            className="w-full"
+            className="w-full text-sm sm:text-base"
           />
           {imagePreview.length > 0 && (
-            <div className="grid grid-cols-3 gap-4 mt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4 mt-2">
               {imagePreview.map((src, index) => (
                 <img
                   key={index}
                   src={src}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-32 object-cover rounded"
+                  className="w-full h-24 sm:h-32 object-cover rounded"
                 />
               ))}
             </div>
@@ -134,10 +135,10 @@ function CreateIncident() {
             accept="video/*"
             multiple
             onChange={handleVideoChange}
-            className="w-full"
+            className="w-full text-sm sm:text-base"
           />
           {videos.length > 0 && (
-            <div className="text-sm text-gray-600">
+            <div className="text-xs sm:text-sm text-gray-600">
               {videos.length} video(s) selected
             </div>
           )}
@@ -148,7 +149,7 @@ function CreateIncident() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full"
+          className="w-full sm:w-auto"
         >
           {loading ? <LoadingSpinner /> : 'Submit Report'}
         </Button>
