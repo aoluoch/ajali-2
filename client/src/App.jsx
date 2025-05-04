@@ -9,6 +9,7 @@ import MyProfile from './pages/MyProfile';
 import ManageIncidents from './pages/ManageIncidents';
 import ContactPage from './pages/ContactPage';
 import LandingPage from './pages/LandingPage';
+import AboutPage from './pages/AboutPage';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import IncidentDetails from './pages/IncidentDetails';
@@ -20,6 +21,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<><Navbar /><ContactPage /></>} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/" element={<LandingPage />} exact />
 
         {/* Protected routes */}
