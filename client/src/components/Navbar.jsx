@@ -9,7 +9,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
   const navItems = [
     { label: 'Home', path: '/', type: 'route' },
@@ -67,16 +67,21 @@ const Navbar = () => {
   };
 
   const renderAuthButtons = () => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       return (
-        <Button
-          onClick={handleLogout}
-          variant="danger"
-          className="flex items-center"
-        >
-          <LogOut className="h-5 w-5 mr-2" />
-          Logout
-        </Button>
+        <div className="flex items-center space-x-4">
+          <span className="hidden md:block text-gray-700">
+            Welcome, {user.username || 'Guest'}
+          </span>
+          <Button
+            onClick={handleLogout}
+            variant="danger"
+            className="flex items-center"
+          >
+            <LogOut className="h-5 w-5 mr-2" />
+            Logout
+          </Button>
+        </div>
       );
     }
     return (

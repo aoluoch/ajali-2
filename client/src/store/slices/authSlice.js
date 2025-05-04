@@ -22,10 +22,7 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await api.post('/register', userData);
-      const { access_token, user } = response.data;
-      // Store auth data
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Don't store auth data after registration
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
@@ -128,16 +125,13 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
-        state.user = action.payload.user;
-        state.token = action.payload.access_token;
-        state.isAuthenticated = true;
-        state.error = null;
+      .addCase(register.fulfilled, (state) => {
         state.isLoading = false;
+        state.error = null;
+        // Don't set authentication state after registration
       })
       .addCase(register.rejected, (state, action) => {
         state.error = action.payload;
-        state.isAuthenticated = false;
         state.isLoading = false;
       })
       // Check auth status cases

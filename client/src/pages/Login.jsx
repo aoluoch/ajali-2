@@ -27,10 +27,13 @@ const Login = () => {
     try {
       if (isRegistering) {
         await dispatch(register({ username, email, password })).unwrap();
+        setIsRegistering(false); // Switch to login form after successful registration
+        setPassword(''); // Clear password for security
+        // Show success message or notification here if desired
       } else {
         await dispatch(login({ email, password })).unwrap();
+        navigate('/dashboard');
       }
-      navigate('/dashboard');
     } catch (err) {
       console.error('Authentication failed:', err);
     }
