@@ -252,14 +252,22 @@ const IncidentDetails = () => {
               <h2 className="text-lg font-semibold mb-4">Videos</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentIncident.videos.map((video, index) => (
-                  <div key={index} className="rounded-lg overflow-hidden shadow-md">
-                    <video
-                      src={video.video_url}
-                      controls
-                      className="w-full h-auto"
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+                  <div key={index} className="rounded-lg overflow-hidden shadow-md bg-gray-100">
+                    <div className="relative aspect-video">
+                      <video
+                        src={video.video_url}
+                        controls
+                        controlsList="nodownload"
+                        preload="metadata"
+                        className="w-full h-full object-contain"
+                        poster={video.video_url + '#t=0.1'} // Creates a thumbnail from the first frame
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <div className="p-3 border-t">
+                      <p className="text-sm text-gray-600">Video {index + 1}</p>
+                    </div>
                   </div>
                 ))}
               </div>

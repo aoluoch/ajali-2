@@ -279,18 +279,29 @@ function CreateIncident() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                   {videoPreview.map((src, index) => (
                     <div key={index} className="relative group">
-                      <video
-                        src={src}
-                        controls
-                        className="w-full rounded"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeVideo(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                      <div className="relative rounded-lg overflow-hidden bg-gray-100">
+                        <video
+                          src={src}
+                          controls
+                          controlsList="nodownload"
+                          preload="metadata"
+                          className="w-full rounded aspect-video object-cover"
+                          poster={src + '#t=0.1'} // Creates a thumbnail from the first frame
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                        <button
+                          type="button"
+                          onClick={() => removeVideo(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                          title="Remove video"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500 truncate">
+                        Video {index + 1}
+                      </p>
                     </div>
                   ))}
                 </div>
