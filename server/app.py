@@ -18,37 +18,42 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def create_app():
-    # Create Flask app and API
     app = Flask(__name__)
+    
+    # Configure CORS
     CORS(app, resources={
         r"/api/*": {
-            "origins": ["http://localhost:5173"],  # Vite default dev server port
+            "origins": ["http://localhost:5173", os.getenv('FRONTEND_URL', '')],
             "methods": ["GET", "POST", "PUT", "DELETE"],
             "allow_headers": ["Content-Type", "Authorization"]
         }
     })
-    api = Api(app)
-
+    
     # Load configuration settings
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-jwt-secret-key-here')
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', os.getenv('SECRET_KEY'))
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
-    # Use absolute path for SQLite database
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ajali.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    
+    # Configure database
+    database_url = os.getenv('DATABASE_URL')
+    # Handle Render PostgreSQL URL format
+    if database_url and database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize extensions
     db.init_app(app)
     migrate = Migrate(app, db)
     jwt = JWTManager(app)
-
-    # Configure Cloudinary
+    api = Api(app)
     configure_cloudinary()
 
     # Register blueprints
     app.register_blueprint(incidents, url_prefix='/api')
 
+    # Add routes
     class UserRegisterResource(Resource):
         def post(self):
             data = request.get_json()
@@ -72,10 +77,7 @@ def create_app():
             try:
                 db.session.add(new_user)
                 db.session.commit()
-                
-                # Create access token
                 access_token = create_access_token(identity=new_user.id)
-                
                 return {
                     'message': 'User created successfully',
                     'access_token': access_token
