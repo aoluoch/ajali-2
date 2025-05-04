@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { createIncident, fetchIncidentById, updateIncident } from '../store/slices/incidentSlice';
+import { X } from 'lucide-react';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import ErrorMessage from '../components/ErrorMessage';
@@ -20,7 +21,7 @@ function LocationPicker({ setPosition }) {
 function CreateIncident() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { id } = useParams(); // Get the incident ID from URL if editing
+  const { id } = useParams();
   const { loadingStates, error, currentIncident } = useSelector((state) => state.incidents);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -29,9 +30,12 @@ function CreateIncident() {
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
+  const [videoPreview, setVideoPreview] = useState([]);
   const formRef = useRef(null);
 
-  // Fetch incident data if editing
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_FILES = 5;
+
   useEffect(() => {
     if (id) {
       setIsEditing(true);
@@ -40,11 +44,13 @@ function CreateIncident() {
         .then(incident => {
           setDescription(incident.description || '');
           setPosition([incident.latitude || 0, incident.longitude || 0]);
-          // Note: We can't populate the file inputs with existing files
-          // due to security restrictions, but we can show existing images
           if (incident.images && incident.images.length > 0) {
             const imagePreviews = incident.images.map(img => img.image_url);
             setImagePreview(imagePreviews);
+          }
+          if (incident.videos && incident.videos.length > 0) {
+            const videoPreviews = incident.videos.map(vid => vid.video_url);
+            setVideoPreview(videoPreviews);
           }
         })
         .catch(err => {
@@ -54,30 +60,82 @@ function CreateIncident() {
     }
   }, [id, dispatch, navigate]);
 
+  const validateFiles = (files, type) => {
+    const errors = [];
+    const validTypes = type === 'image' 
+      ? ['image/jpeg', 'image/png', 'image/gif'] 
+      : ['video/mp4', 'video/quicktime', 'video/x-msvideo'];
+
+    if (files.length > MAX_FILES) {
+      errors.push(`You can only upload up to ${MAX_FILES} ${type}s at once`);
+    }
+
+    for (const file of files) {
+      if (!validTypes.includes(file.type)) {
+        errors.push(`${file.name} is not a valid ${type} file`);
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        errors.push(`${file.name} exceeds the maximum file size of 10MB`);
+      }
+    }
+
+    return errors;
+  };
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    setImages(files);
+    const errors = validateFiles(files, 'image');
 
-    // Create image previews
-    const previews = files.map(file => URL.createObjectURL(file));
-    setImagePreview(previews);
+    if (errors.length > 0) {
+      dispatch({ type: 'incidents/setError', payload: errors.join('\n') });
+      return;
+    }
+
+    setImages(files);
+    setImagePreview(files.map(file => URL.createObjectURL(file)));
   };
 
   const handleVideoChange = (e) => {
     const files = Array.from(e.target.files);
+    const errors = validateFiles(files, 'video');
+
+    if (errors.length > 0) {
+      dispatch({ type: 'incidents/setError', payload: errors.join('\n') });
+      return;
+    }
+
     setVideos(files);
+    setVideoPreview(files.map(file => URL.createObjectURL(file)));
+  };
+
+  const removeImage = (index) => {
+    const newImages = [...images];
+    const newPreviews = [...imagePreview];
+    URL.revokeObjectURL(newPreviews[index]); // Clean up the URL object
+    newImages.splice(index, 1);
+    newPreviews.splice(index, 1);
+    setImages(newImages);
+    setImagePreview(newPreviews);
+  };
+
+  const removeVideo = (index) => {
+    const newVideos = [...videos];
+    const newPreviews = [...videoPreview];
+    URL.revokeObjectURL(newPreviews[index]); // Clean up the URL object
+    newVideos.splice(index, 1);
+    newPreviews.splice(index, 1);
+    setVideos(newVideos);
+    setVideoPreview(newPreviews);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!description.trim()) {
       dispatch({ type: 'incidents/setError', payload: 'Description is required' });
       return;
     }
 
-    // Validate coordinates
     if (position[0] === 0 && position[1] === 0) {
       dispatch({ type: 'incidents/setError', payload: 'Please select a location on the map' });
       return;
@@ -85,18 +143,14 @@ function CreateIncident() {
 
     try {
       if (isEditing && id) {
-        // For editing, we'll use a JSON payload instead of FormData
-        // since we're not handling file uploads in the edit endpoint
         const data = {
           description,
           latitude: position[0],
           longitude: position[1]
         };
-
         await dispatch(updateIncident({ id, data })).unwrap();
         navigate(`/incident-details/${id}`);
       } else {
-        // For creating, use FormData to handle file uploads
         const formData = new FormData();
         formData.append('description', description);
         formData.append('latitude', position[0].toString());
@@ -114,10 +168,21 @@ function CreateIncident() {
         navigate(`/incident-details/${result.id}`);
       }
     } catch (err) {
-      // Error is handled by the reducer
       console.error(`Failed to ${isEditing ? 'update' : 'create'} incident:`, err);
     }
   };
+
+  // Clean up preview URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      imagePreview.forEach(url => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+      });
+      videoPreview.forEach(url => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+      });
+    };
+  }, [imagePreview, videoPreview]);
 
   return (
     <div className="max-w-4xl mx-auto p-2 sm:p-4">
@@ -171,7 +236,7 @@ function CreateIncident() {
         {!isEditing && (
           <>
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Images</label>
+              <label className="block text-sm font-medium">Images (Max {MAX_FILES} files, 10MB each)</label>
               <Input
                 type="file"
                 accept="image/*"
@@ -182,19 +247,27 @@ function CreateIncident() {
               {imagePreview.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4 mt-2">
                   {imagePreview.map((src, index) => (
-                    <img
-                      key={index}
-                      src={src}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-24 sm:h-32 object-cover rounded"
-                    />
+                    <div key={index} className="relative group">
+                      <img
+                        src={src}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-24 sm:h-32 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium">Videos</label>
+              <label className="block text-sm font-medium">Videos (Max {MAX_FILES} files, 10MB each)</label>
               <Input
                 type="file"
                 accept="video/*"
@@ -202,9 +275,24 @@ function CreateIncident() {
                 onChange={handleVideoChange}
                 className="w-full text-sm sm:text-base"
               />
-              {videos.length > 0 && (
-                <div className="text-xs sm:text-sm text-gray-600">
-                  {videos.length} video(s) selected
+              {videoPreview.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                  {videoPreview.map((src, index) => (
+                    <div key={index} className="relative group">
+                      <video
+                        src={src}
+                        controls
+                        className="w-full rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeVideo(index)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
