@@ -35,7 +35,10 @@ def create_app():
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
     
     # Configure database
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ajali.db'
+    database_url = os.getenv('DATABASE_URL', 'sqlite:///ajali.db')
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize extensions
