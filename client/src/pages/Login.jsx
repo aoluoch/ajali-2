@@ -42,7 +42,7 @@ const Login = () => {
   // Function to handle API call for login
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/login', {
+      const response = await fetch('http://192.168.0.105:5555/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
